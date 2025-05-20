@@ -18,12 +18,12 @@ export default defineConfig({
         theme_color: '#2d3748',
         icons: [
           {
-            src: '/pages/pwa/android-chrome-192x192.png',
+            src: '/public/android-chrome-192x192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/pages/pwa/android-chrome-512x512.png',
+            src: '/public/android-chrome-512x512.png',
             sizes: '512x512',
             type: 'image/png',
           },
@@ -33,8 +33,8 @@ export default defineConfig({
         // Você pode customizar aqui se quiser
       },
       includeAssets: [
-        'pages/pwa/android-chrome-192x192.png',
-        'pages/pwa/android-chrome-512x512.png',
+        'public/android-chrome-192x192.png',
+        'public/android-chrome-512x512.png',
       ],
     }),
   ],
