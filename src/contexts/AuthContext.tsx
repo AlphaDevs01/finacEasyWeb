@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       // Buscar informações do usuário
-      api.get('/api/configuracoes/usuario')
+      api.get('/configuracoes/usuario')
         .then(response => {
           setUser(response.data);
         })
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, senha: string): Promise<void> => {
-    const response = await api.post('/api/auth/login', { email, senha });
+    const response = await api.post('/auth/login', { email, senha });
     
     const { token, user } = response.data;
     
@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (nome: string, email: string, senha: string): Promise<void> => {
-    const response = await api.post('/api/auth/register', { nome, email, senha });
+    const response = await api.post('/auth/register', { nome, email, senha });
     
     const { token, user } = response.data;
     
@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUser = async (data: Partial<User>): Promise<void> => {
-    const response = await api.put('/api/configuracoes/usuario', data);
+    const response = await api.put('/configuracoes/usuario', data);
     setUser(prevUser => ({
       ...(prevUser as User),
       ...response.data

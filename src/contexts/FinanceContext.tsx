@@ -126,7 +126,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadDashboard = async (mes?: number, ano?: number): Promise<void> => {
     try {
-      let url = '/api/dashboard';
+      let url = '/dashboard';
       const params = [];
       
       if (mes) params.push(`mes=${mes}`);
@@ -145,7 +145,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadHistorico = async (ano?: number): Promise<void> => {
     try {
-      let url = '/api/dashboard/historico';
+      let url = '/dashboard/historico';
       
       if (ano) {
         url += `?ano=${ano}`;
@@ -160,7 +160,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadCartoes = async (): Promise<void> => {
     try {
-      const response = await api.get('/api/cartoes');
+      const response = await api.get('/cartoes');
       setCartoes(response.data);
     } catch (error) {
       console.error('Erro ao carregar cartões:', error);
@@ -169,10 +169,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadFaturas = async (cartaoId?: number): Promise<void> => {
     try {
-      let url = '/api/faturas';
+      let url = '/faturas';
       
       if (cartaoId) {
-        url = `/api/faturas/cartao/${cartaoId}`;
+        url = `/faturas/cartao/${cartaoId}`;
       }
       
       const response = await api.get(url);
@@ -184,7 +184,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadDespesas = async (filters?: { mes?: number; ano?: number; categoria?: string }): Promise<void> => {
     try {
-      let url = '/api/despesas';
+      let url = '/despesas';
       const params = [];
       
       if (filters?.mes) params.push(`mes=${filters.mes}`);
@@ -204,7 +204,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadReceitas = async (filters?: { mes?: number; ano?: number; categoria?: string }): Promise<void> => {
     try {
-      let url = '/api/receitas';
+      let url = '/receitas';
       const params = [];
       
       if (filters?.mes) params.push(`mes=${filters.mes}`);
@@ -224,7 +224,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadInvestimentos = async (tipo?: string): Promise<void> => {
     try {
-      let url = '/api/investimentos';
+      let url = '/investimentos';
       
       if (tipo) {
         url += `?tipo=${tipo}`;
@@ -239,7 +239,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadConfiguracoes = async (): Promise<void> => {
     try {
-      const response = await api.get('/api/configuracoes');
+      const response = await api.get('/configuracoes');
       setConfiguracoes(response.data);
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
@@ -249,9 +249,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const salvarCartao = async (cartao: Partial<Cartao>): Promise<void> => {
     try {
       if (cartao.id) {
-        await api.put(`/api/cartoes/${cartao.id}`, cartao);
+        await api.put(`/cartoes/${cartao.id}`, cartao);
       } else {
-        await api.post('/api/cartoes', cartao);
+        await api.post('/cartoes', cartao);
       }
       
       loadCartoes();
@@ -263,7 +263,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const excluirCartao = async (id: number): Promise<void> => {
     try {
-      await api.delete(`/api/cartoes/${id}`);
+      await api.delete(`/cartoes/${id}`);
       loadCartoes();
     } catch (error) {
       console.error('Erro ao excluir cartão:', error);
@@ -274,9 +274,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const salvarFatura = async (fatura: Partial<Fatura>): Promise<void> => {
     try {
       if (fatura.id) {
-        await api.put(`/api/faturas/${fatura.id}`, fatura);
+        await api.put(`/faturas/${fatura.id}`, fatura);
       } else {
-        await api.post('/api/faturas', fatura);
+        await api.post('/faturas', fatura);
       }
       
       loadFaturas();
@@ -289,7 +289,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const atualizarStatusFatura = async (id: number, status: string): Promise<void> => {
     try {
-      await api.put(`/api/faturas/${id}`, { status });
+      await api.put(`/faturas/${id}`, { status });
       loadFaturas();
       loadDashboard();
     } catch (error) {
@@ -301,9 +301,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const salvarDespesa = async (despesa: Partial<Despesa>): Promise<void> => {
     try {
       if (despesa.id) {
-        await api.put(`/api/despesas/${despesa.id}`, despesa);
+        await api.put(`/despesas/${despesa.id}`, despesa);
       } else {
-        await api.post('/api/despesas', despesa);
+        await api.post('/despesas', despesa);
       }
       
       loadDespesas();
@@ -316,7 +316,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const excluirDespesa = async (id: number): Promise<void> => {
     try {
-      await api.delete(`/api/despesas/${id}`);
+      await api.delete(`/despesas/${id}`);
       loadDespesas();
       loadDashboard();
     } catch (error) {
@@ -328,9 +328,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const salvarReceita = async (receita: Partial<Receita>): Promise<void> => {
     try {
       if (receita.id) {
-        await api.put(`/api/receitas/${receita.id}`, receita);
+        await api.put(`/receitas/${receita.id}`, receita);
       } else {
-        await api.post('/api/receitas', receita);
+        await api.post('/receitas', receita);
       }
       
       loadReceitas();
@@ -343,7 +343,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const excluirReceita = async (id: number): Promise<void> => {
     try {
-      await api.delete(`/api/receitas/${id}`);
+      await api.delete(`/receitas/${id}`);
       loadReceitas();
       loadDashboard();
     } catch (error) {
@@ -355,9 +355,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const salvarInvestimento = async (investimento: Partial<Investimento>): Promise<void> => {
     try {
       if (investimento.id) {
-        await api.put(`/api/investimentos/${investimento.id}`, investimento);
+        await api.put(`/investimentos/${investimento.id}`, investimento);
       } else {
-        await api.post('/api/investimentos', investimento);
+        await api.post('/investimentos', investimento);
       }
       
       loadInvestimentos();
@@ -369,7 +369,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const excluirInvestimento = async (id: number): Promise<void> => {
     try {
-      await api.delete(`/api/investimentos/${id}`);
+      await api.delete(`/investimentos/${id}`);
       loadInvestimentos();
     } catch (error) {
       console.error('Erro ao excluir investimento:', error);
@@ -379,7 +379,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const salvarConfiguracoes = async (config: Partial<Configuracao>): Promise<void> => {
     try {
-      await api.put('/api/configuracoes', config);
+      await api.put('/configuracoes', config);
       loadConfiguracoes();
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
@@ -389,7 +389,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const importarCSV = async (tipo: 'despesas' | 'receitas', data: any[]): Promise<any> => {
     try {
-      const response = await api.post(`/api/import/${tipo}`, { data });
+      const response = await api.post(`/import/${tipo}`, { data });
       
       if (tipo === 'despesas') {
         loadDespesas();

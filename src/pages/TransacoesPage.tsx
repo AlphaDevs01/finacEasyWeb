@@ -89,7 +89,7 @@ const TransacoesPage: React.FC = () => {
             if (token && token.startsWith('"') && token.endsWith('"')) {
               token = token.slice(1, -1);
             }
-            const res = await fetch(`/api/faturas/cartao/${cartaoId}`, {
+            const res = await fetch(`/faturas/cartao/${cartaoId}`, {
               headers: {
                 'Authorization': token ? `Bearer ${token}` : ''
               }
@@ -113,7 +113,7 @@ const TransacoesPage: React.FC = () => {
               token = token.slice(1, -1);
             }
             // Corrija: valor_total deve ser um número (0), não string ou undefined
-            const faturaRes = await fetch('/api/faturas', {
+            const faturaRes = await fetch('/faturas', {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
@@ -158,7 +158,7 @@ const TransacoesPage: React.FC = () => {
           if (token && token.startsWith('"') && token.endsWith('"')) {
             token = token.slice(1, -1);
           }
-          await fetch(`/api/faturas/${faturaId}`, {
+          await fetch(`/faturas/${faturaId}`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',

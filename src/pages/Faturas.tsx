@@ -35,8 +35,8 @@ const Faturas: React.FC = () => {
       setError('');
       try {
         const [cartoesRes, faturasRes] = await Promise.all([
-          axios.get('/api/cartoes'),
-          axios.get('/api/faturas')
+          axios.get('/cartoes'),
+          axios.get('/faturas')
         ]);
         setCartoes(cartoesRes.data);
         setFaturas(faturasRes.data);
@@ -66,7 +66,7 @@ const Faturas: React.FC = () => {
     if (!despesas[faturaId]) {
       setLoadingFatura(faturaId);
       try {
-        const res = await axios.get(`/api/faturas/${faturaId}`);
+        const res = await axios.get(`/faturas/${faturaId}`);
         setDespesas(prev => ({ ...prev, [faturaId]: res.data.despesas || [] }));
       } catch (e: any) {
         setError(e.response?.data?.error || 'Erro ao buscar despesas');
@@ -98,7 +98,7 @@ const Faturas: React.FC = () => {
       // Atualiza valor_total e status se pago total
       const novoValor = Math.max(0, pagamentoModal.fatura.valor_total - valor);
       const status = novoValor === 0 ? 'paga' : 'aberta';
-      const res = await axios.put(`/api/faturas/${pagamentoModal.fatura.id}`, {
+      const res = await axios.put(`/faturas/${pagamentoModal.fatura.id}`, {
         valor_total: novoValor,
         status
       });

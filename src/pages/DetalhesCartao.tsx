@@ -100,7 +100,7 @@ const DetalhesCartao: React.FC = () => {
         if (token && token.startsWith('"') && token.endsWith('"')) {
           token = token.slice(1, -1);
         }
-        const res = await axios.get(`/api/faturas/${faturaId}`, {
+        const res = await axios.get(`/faturas/${faturaId}`, {
           headers: {
             Authorization: token ? `Bearer ${token}` : ''
           }
@@ -135,7 +135,7 @@ const DetalhesCartao: React.FC = () => {
     try {
       const novoValor = Math.max(0, pagamentoModal.fatura.valor_total - valor);
       const status = novoValor === 0 ? 'paga' : 'aberta';
-      await axios.put(`/api/faturas/${pagamentoModal.fatura.id}`, {
+      await axios.put(`/faturas/${pagamentoModal.fatura.id}`, {
         valor_total: novoValor,
         status
       });
