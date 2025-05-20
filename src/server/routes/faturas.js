@@ -1,7 +1,11 @@
 import express from 'express';
 import db from '../db/index.js';
+import { authenticateToken } from '../middleware/auth.js'; // Corrija o import
 
 const router = express.Router();
+
+// Aplica o middleware de autenticação a todas as rotas deste router
+router.use(authenticateToken);
 
 // Obter todas as faturas do usuário
 router.get('/', async (req, res) => {
@@ -97,7 +101,15 @@ router.post('/', async (req, res) => {
   
   try {
     // Validar dados
-    if (!cartaoId || !mes_referencia || !ano_referencia || !valor_total || !status) {
+    // Corrigido: valor_total pode ser zero, então use checagem explícita de undefined/null
+    if (
+      !cartaoId ||
+      !mes_referencia ||
+      !ano_referencia ||
+      valor_total === undefined ||
+      valor_total === null ||
+      !status
+    ) {
       return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
     }
     

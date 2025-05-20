@@ -10,7 +10,7 @@ export const authenticateToken = (req, res, next) => {
   if (!token) return res.status(401).json({ error: 'Acesso negado' });
 
   try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET || 'sua_chave_secreta');
+    const verified = jwt.verify(token, process.env.JWT_SECRET || 'dd59d6bec5bb7426b5fd2427cbeeb79dfe67e60bf9dedab06bc96fe037d105af');
     req.user = verified;
     next();
   } catch (error) {
@@ -19,5 +19,5 @@ export const authenticateToken = (req, res, next) => {
 };
 
 export const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET || 'sua_chave_secreta', { expiresIn: '1d' });
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET || 'dd59d6bec5bb7426b5fd2427cbeeb79dfe67e60bf9dedab06bc96fe037d105af', { expiresIn: '1d' });
 };

@@ -7,4 +7,9 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000', // Adicione esta linha para proxy das rotas API para o backend
+    },
+  },
 });

@@ -14,6 +14,7 @@ import Relatorios from './pages/Relatorios';
 import ImportacaoPage from './pages/ImportacaoPage';
 import Configuracoes from './pages/Configuracoes';
 import NotFound from './pages/NotFound';
+import Faturas from './pages/Faturas';
 
 function App() {
   return (
@@ -94,6 +95,15 @@ function App() {
                   <Configuracoes />
                 </PrivateRoute>
               } 
+            />
+            
+            <Route 
+              path="/faturas"
+              element={
+                <PrivateRoute>
+                  <Faturas />
+                </PrivateRoute>
+              }
             />
             
             <Route path="/404" element={<NotFound />} />

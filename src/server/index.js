@@ -20,7 +20,6 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -36,7 +35,7 @@ app.use('/api/auth', authRoutes);
 // Protected routes with JWT middleware
 app.use('/api/dashboard', authenticateToken, dashboardRoutes);
 app.use('/api/cartoes', authenticateToken, cartaoRoutes);
-app.use('/api/faturas', authenticateToken, faturaRoutes);
+app.use('/api/faturas', authenticateToken, faturaRoutes); // Esta linha já está correta!
 app.use('/api/despesas', authenticateToken, despesaRoutes);
 app.use('/api/receitas', authenticateToken, receitaRoutes);
 app.use('/api/investimentos', authenticateToken, investimentoRoutes);
@@ -52,11 +51,8 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-if (process.env.VERCEL) {
-  export default app;
-} else {
-  // Start server
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+export default app;

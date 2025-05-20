@@ -7,7 +7,7 @@ const { Pool } = pg;
 
 // Create a new pool
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/financesystem',
+  connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_AWG3bkOE2cSi@ep-plain-dawn-acz8jya6-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require',
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
