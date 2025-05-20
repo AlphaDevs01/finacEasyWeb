@@ -1,4 +1,4 @@
-  import express from 'express';
+import express from 'express';
   import cors from 'cors';
   import dotenv from 'dotenv';
   import { fileURLToPath } from 'url';
@@ -53,9 +53,11 @@
     });
   }
 
-  // Remova o app.listen daqui! O Vercel faz isso automaticamente.
-  // app.listen(PORT, () => {
-  //   console.log(`Server running on port ${PORT}`);
-  // });
+  // Só rode o app.listen se não estiver em ambiente serverless (Vercel)
+  if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }
 
   export default app;
