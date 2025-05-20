@@ -22,6 +22,8 @@ const __dirname = dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
 
+const app = express(); // Adicione esta linha
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -51,8 +53,9 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Remova o app.listen daqui! O Vercel faz isso automaticamente.
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
+
 export default app;
