@@ -14,7 +14,7 @@
   "routes": [
     {
       "src": "/api/(.)",
-      "dest": "/src/server/index.js"
+      "dest": "src/server/index.js"
     },
     {
       "src": "/(..(js|css|png|jpg|svg|ico|json|txt|woff2?))",
