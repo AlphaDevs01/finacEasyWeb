@@ -45,8 +45,8 @@ router.post('/register', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao registrar usuário' });
+    console.error('Erro ao registrar usuário:', error); // Log detalhado
+    res.status(500).json({ error: 'Erro ao registrar usuário', details: error.message });
   }
 });
 
@@ -86,7 +86,7 @@ router.post('/login', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error(error);
+    console.error(error); // Isso aparecerá nos logs da Vercel
     res.status(500).json({ error: 'Erro ao realizar login' });
   }
 });
