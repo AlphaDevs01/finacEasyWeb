@@ -242,26 +242,45 @@ const Dashboard: React.FC = () => {
             {/* Categorias de Despesas */}
             <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow lg:col-span-1">
               <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Despesas por Categoria</h3>
-              {dashboard.categorias_despesas.length > 0 ? (
-                <div className="h-64">
+              {(dashboard.categorias_despesas && dashboard.categorias_despesas.length > 0) ? (
+                <div className="h-64 flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={dashboard.categorias_despesas}
+                        data={
+                          dashboard.categorias_despesas.map((item: any) => ({
+                            categoria: item.categoria,
+                            total: Number(item.total)
+                          }))
+                        }
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        outerRadius={80}
+                        outerRadius={100}
                         fill="#8884d8"
                         dataKey="total"
                         nameKey="categoria"
-                        label={({ categoria, total }) => `${categoria}: ${formatCurrency(total)}`}
+                        // Remover label customizado para evitar sobreposição
                       >
-                        {dashboard.categorias_despesas.map((entry, index) => (
+                        {dashboard.categorias_despesas.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                      <Legend
+                        layout="vertical"
+                        align="left"
+                        verticalAlign="middle"
+                        formatter={(value: any, entry: any, index: number) => {
+                          const categoria = dashboard.categorias_despesas[index]?.categoria || value;
+                          const total = dashboard.categorias_despesas[index]?.total || 0;
+                          return (
+                            <span className="dark:text-white text-gray-800">
+                              {categoria}: {formatCurrency(Number(total))}
+                            </span>
+                          );
+                        }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
