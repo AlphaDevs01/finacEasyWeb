@@ -1,14 +1,12 @@
 const CACHE_NAME = "financEasy-cache-v1";
 const urlsToCache = [
   "/",
-  "/pages/home/home.html",
-  "/pages/despesas/despesas.html",
-  "/pages/receitas/receitas.html",
-  "/pages/relatorios/relatorios.html",
-  "/css/style.css",
+  "/index.html",
+  "/style.css",
   "/js/script.js",
-  "/public/android-chrome-192x192.png",
-  "/public/android-chrome-512x512.png"
+  "/android-chrome-192x192.png",
+  "/android-chrome-512x512.png"
+  // ...adicione outros assets essenciais se necessário...
 ];
 
 self.addEventListener("install", (event) => {

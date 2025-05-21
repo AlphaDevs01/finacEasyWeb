@@ -97,10 +97,16 @@ define(['./workbox-54d0af47'], (function (workbox) { 'use strict';
     "revision": "5b36fdfeed5019c6e30c67701df61d86"
   }, {
     "url": "service-worker.js",
-    "revision": "41bcb37dbd226ddb0581dd03942fdde4"
+    "revision": "7c5ce8995c0e7a0d39a7a4b480ea9006"
+  }, {
+    "url": "android-chrome-192x192.png",
+    "revision": "86822c21a992495cdd48293514921d97"
+  }, {
+    "url": "android-chrome-512x512.png",
+    "revision": "9e4c14d23e0af9bae17dd82faf4139ab"
   }, {
     "url": "manifest.webmanifest",
-    "revision": "6362837f7c167795bd6f24092069c308"
+    "revision": "d2f7ead3aac6fc5083cb388dc4b7d8b9"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html")));

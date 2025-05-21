@@ -31,7 +31,7 @@ import express from 'express';
   // Initialize Database
   db.initDatabase();
 
-  // /public routes
+  //  routes
   app.use('/api/auth', authRoutes);
 
   // Protected routes with JWT middleware
