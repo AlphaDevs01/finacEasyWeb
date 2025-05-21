@@ -1,13 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useFinance } from '../contexts/FinanceContext';
-import { ArrowLeft, CreditCard, Calendar, DollarSign, CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
-import axios from 'axios';
-import dayjs from 'dayjs';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useFinance } from "../contexts/FinanceContext";
+import {
+  ArrowLeft,
+  CreditCard,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+} from "lucide-react";
+import { api } from "../services/api"; // Use o api do projeto
+import dayjs from "dayjs";
 
 const meses = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
 ];
 
 const getCurrentYear = () => new Date().getFullYear();
@@ -16,19 +36,23 @@ const getCurrentMonth = () => new Date().getMonth() + 1;
 const DetalhesCartao: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { cartoes, faturas, loadCartoes, loadFaturas, atualizarStatusFatura } = useFinance();
-  
+  const { cartoes, faturas, loadCartoes, loadFaturas, atualizarStatusFatura } =
+    useFinance();
+
   const [cartao, setCartao] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [mes, setMes] = useState(getCurrentMonth());
   const [ano, setAno] = useState(getCurrentYear());
   const [expanded, setExpanded] = useState<{ [faturaId: number]: boolean }>({});
   const [despesas, setDespesas] = useState<{ [faturaId: number]: any[] }>({});
   const [loadingFatura, setLoadingFatura] = useState<number | null>(null);
-  const [pagamentoModal, setPagamentoModal] = useState<{ open: boolean, fatura: any | null }>({ open: false, fatura: null });
-  const [valorPagamento, setValorPagamento] = useState('');
-  const [success, setSuccess] = useState('');
+  const [pagamentoModal, setPagamentoModal] = useState<{
+    open: boolean;
+    fatura: any | null;
+  }>({ open: false, fatura: null });
+  const [valorPagamento, setValorPagamento] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -38,41 +62,51 @@ const DetalhesCartao: React.FC = () => {
           await loadFaturas(parseInt(id));
         }
       } catch (error) {
-        setError('Erro ao carregar dados do cartão');
+        setError("Erro ao carregar dados do cartão");
       } finally {
         setLoading(false);
       }
     };
-    
+
     loadData();
   }, [id]);
-  
+
   useEffect(() => {
     if (cartoes.length > 0 && id) {
-      const found = cartoes.find(c => c.id === parseInt(id));
+      const found = cartoes.find((c) => c.id === parseInt(id));
       if (found) {
         setCartao(found);
       } else {
-        setError('Cartão não encontrado');
+        setError("Cartão não encontrado");
       }
     }
   }, [cartoes, id]);
-  
+
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
-  
+
   const getMonthName = (month: number) => {
     const months = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
     ];
     return months[month - 1];
   };
-  
+
   const handleStatusChange = async (faturaId: number, newStatus: string) => {
     try {
       await atualizarStatusFatura(faturaId, newStatus);
@@ -80,34 +114,28 @@ const DetalhesCartao: React.FC = () => {
         await loadFaturas(parseInt(id));
       }
     } catch (error) {
-      setError('Erro ao atualizar status da fatura');
+      setError("Erro ao atualizar status da fatura");
     }
   };
 
   // Filtrar faturas por mês/ano
-  const faturasFiltradas = faturas.filter(f =>
-    f.mes_referencia === mes && f.ano_referencia === ano
+  const faturasFiltradas = faturas.filter(
+    (f) => f.mes_referencia === mes && f.ano_referencia === ano
   );
 
   // Toggle despesas da fatura
   const handleToggleDespesas = async (faturaId: number) => {
-    setExpanded(prev => ({ ...prev, [faturaId]: !prev[faturaId] }));
+    setExpanded((prev) => ({ ...prev, [faturaId]: !prev[faturaId] }));
     if (!despesas[faturaId]) {
       setLoadingFatura(faturaId);
       try {
-        // Adicione o token manualmente ao axios se necessário
-        let token = localStorage.getItem('@FinanceApp:token');
-        if (token && token.startsWith('"') && token.endsWith('"')) {
-          token = token.slice(1, -1);
-        }
-        const res = await axios.get(`/faturas/${faturaId}`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : ''
-          }
-        });
-        setDespesas(prev => ({ ...prev, [faturaId]: res.data.despesas || [] }));
+        const res = await api.get(`/faturas/${faturaId}`);
+        setDespesas((prev) => ({
+          ...prev,
+          [faturaId]: res.data.despesas || [],
+        }));
       } catch (e: any) {
-        setError(e.response?.data?.error || 'Erro ao buscar despesas');
+        setError(e.response?.data?.error || "Erro ao buscar despesas");
       } finally {
         setLoadingFatura(null);
       }
@@ -117,33 +145,33 @@ const DetalhesCartao: React.FC = () => {
   // Abrir modal de pagamento
   const openPagamento = (fatura: any) => {
     setPagamentoModal({ open: true, fatura });
-    setValorPagamento('');
-    setError('');
-    setSuccess('');
+    setValorPagamento("");
+    setError("");
+    setSuccess("");
   };
 
   // Efetuar pagamento (parcial ou total)
   const handlePagamento = async () => {
     if (!pagamentoModal.fatura) return;
-    const valor = parseFloat(valorPagamento.replace(',', '.'));
+    const valor = parseFloat(valorPagamento.replace(",", "."));
     if (isNaN(valor) || valor <= 0) {
-      setError('Informe um valor válido');
+      setError("Informe um valor válido");
       return;
     }
     setLoadingFatura(pagamentoModal.fatura.id);
-    setError('');
+    setError("");
     try {
       const novoValor = Math.max(0, pagamentoModal.fatura.valor_total - valor);
-      const status = novoValor === 0 ? 'paga' : 'aberta';
-      await axios.put(`/faturas/${pagamentoModal.fatura.id}`, {
+      const status = novoValor === 0 ? "paga" : "aberta";
+      await api.put(`/faturas/${pagamentoModal.fatura.id}`, {
         valor_total: novoValor,
-        status
+        status,
       });
-      setSuccess('Pagamento realizado com sucesso!');
+      setSuccess("Pagamento realizado com sucesso!");
       if (id) await loadFaturas(parseInt(id));
       setPagamentoModal({ open: false, fatura: null });
     } catch (e: any) {
-      setError(e.response?.data?.error || 'Erro ao pagar fatura');
+      setError(e.response?.data?.error || "Erro ao pagar fatura");
     } finally {
       setLoadingFatura(null);
     }
@@ -151,7 +179,7 @@ const DetalhesCartao: React.FC = () => {
 
   useEffect(() => {
     if (success) {
-      const t = setTimeout(() => setSuccess(''), 3000);
+      const t = setTimeout(() => setSuccess(""), 3000);
       return () => clearTimeout(t);
     }
   }, [success]);
@@ -163,7 +191,7 @@ const DetalhesCartao: React.FC = () => {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="container mx-auto p-4">
@@ -173,7 +201,7 @@ const DetalhesCartao: React.FC = () => {
       </div>
     );
   }
-  
+
   if (!cartao) {
     return (
       <div className="container mx-auto p-4">
@@ -183,11 +211,11 @@ const DetalhesCartao: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto p-4">
       <button
-        onClick={() => navigate('/cartoes')}
+        onClick={() => navigate("/cartoes")}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6"
       >
         <ArrowLeft size={20} />
@@ -203,25 +231,31 @@ const DetalhesCartao: React.FC = () => {
           </div>
           <CreditCard size={32} />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <div>
             <p className="text-sm opacity-80">Limite</p>
-            <p className="text-xl font-semibold">{formatCurrency(cartao.limite)}</p>
+            <p className="text-xl font-semibold">
+              {formatCurrency(cartao.limite)}
+            </p>
           </div>
-          
+
           <div>
             <p className="text-sm opacity-80">Fechamento</p>
-            <p className="text-xl font-semibold">Dia {cartao.data_fechamento}</p>
+            <p className="text-xl font-semibold">
+              Dia {cartao.data_fechamento}
+            </p>
           </div>
-          
+
           <div>
             <p className="text-sm opacity-80">Vencimento</p>
-            <p className="text-xl font-semibold">Dia {cartao.data_vencimento}</p>
+            <p className="text-xl font-semibold">
+              Dia {cartao.data_vencimento}
+            </p>
           </div>
         </div>
       </div>
-      
+
       {/* Filtros */}
       <div className="flex flex-wrap gap-4 mb-4">
         <div>
@@ -229,10 +263,12 @@ const DetalhesCartao: React.FC = () => {
           <select
             className="border rounded px-2 py-1"
             value={mes}
-            onChange={e => setMes(Number(e.target.value))}
+            onChange={(e) => setMes(Number(e.target.value))}
           >
             {meses.map((m, idx) => (
-              <option key={m} value={idx + 1}>{m}</option>
+              <option key={m} value={idx + 1}>
+                {m}
+              </option>
             ))}
           </select>
         </div>
@@ -241,21 +277,29 @@ const DetalhesCartao: React.FC = () => {
           <select
             className="border rounded px-2 py-1"
             value={ano}
-            onChange={e => setAno(Number(e.target.value))}
+            onChange={(e) => setAno(Number(e.target.value))}
           >
-            {[getCurrentYear() - 1, getCurrentYear(), getCurrentYear() + 1].map(a => (
-              <option key={a} value={a}>{a}</option>
-            ))}
+            {[getCurrentYear() - 1, getCurrentYear(), getCurrentYear() + 1].map(
+              (a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              )
+            )}
           </select>
         </div>
       </div>
 
       {/* Feedback */}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700">{error}</div>
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700">
+          {error}
+        </div>
       )}
       {success && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-700">{success}</div>
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-700">
+          {success}
+        </div>
       )}
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -263,7 +307,7 @@ const DetalhesCartao: React.FC = () => {
           <h2 className="text-xl font-semibold">Faturas</h2>
         </div>
         <div className="divide-y">
-          {faturasFiltradas.map(fatura => (
+          {faturasFiltradas.map((fatura) => (
             <div key={fatura.id} className="p-4 hover:bg-gray-50">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -272,7 +316,11 @@ const DetalhesCartao: React.FC = () => {
                     className="text-gray-500 hover:text-blue-600 focus:outline-none"
                     aria-label="Expandir despesas"
                   >
-                    {expanded[fatura.id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    {expanded[fatura.id] ? (
+                      <ChevronUp size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
+                    )}
                   </button>
                   <span className="font-medium">
                     {meses[fatura.mes_referencia - 1]} {fatura.ano_referencia}
@@ -284,28 +332,34 @@ const DetalhesCartao: React.FC = () => {
                 <div className="flex flex-wrap gap-4 items-center">
                   <div className="text-right">
                     <div className="text-sm text-gray-500">Valor total</div>
-                    <div className="font-semibold">{formatCurrency(fatura.valor_total)}</div>
+                    <div className="font-semibold">
+                      {formatCurrency(fatura.valor_total)}
+                    </div>
                   </div>
                   <div>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      fatura.status === 'paga'
-                        ? 'bg-green-100 text-green-700'
-                        : fatura.status === 'vencida'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {fatura.status === 'paga'
-                        ? 'Paga'
-                        : fatura.status === 'vencida'
-                          ? 'Vencida'
-                          : 'Aberta'}
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        fatura.status === "paga"
+                          ? "bg-green-100 text-green-700"
+                          : fatura.status === "vencida"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {fatura.status === "paga"
+                        ? "Paga"
+                        : fatura.status === "vencida"
+                        ? "Vencida"
+                        : "Aberta"}
                     </span>
                   </div>
                   <button
                     onClick={() => openPagamento(fatura)}
-                    disabled={fatura.status === 'paga'}
+                    disabled={fatura.status === "paga"}
                     className={`flex items-center gap-1 px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm ${
-                      fatura.status === 'paga' ? 'opacity-50 cursor-not-allowed' : ''
+                      fatura.status === "paga"
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
                     }`}
                   >
                     <DollarSign size={16} /> Pagar
@@ -324,18 +378,29 @@ const DetalhesCartao: React.FC = () => {
                       {despesas[fatura.id]?.length > 0 ? (
                         <ul className="divide-y">
                           {despesas[fatura.id].map((d: any) => (
-                            <li key={d.id} className="py-2 flex justify-between items-center">
+                            <li
+                              key={d.id}
+                              className="py-2 flex justify-between items-center"
+                            >
                               <div>
                                 <div className="font-medium">{d.descricao}</div>
-                                <div className="text-xs text-gray-500">{dayjs(d.data).format('DD/MM/YYYY')}</div>
-                                <div className="text-xs text-gray-400">{d.categoria}</div>
+                                <div className="text-xs text-gray-500">
+                                  {dayjs(d.data).format("DD/MM/YYYY")}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {d.categoria}
+                                </div>
                               </div>
-                              <div className="font-semibold">{formatCurrency(d.valor)}</div>
+                              <div className="font-semibold">
+                                {formatCurrency(d.valor)}
+                              </div>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <div className="text-gray-500 text-center py-4">Nenhuma despesa nesta fatura.</div>
+                        <div className="text-gray-500 text-center py-4">
+                          Nenhuma despesa nesta fatura.
+                        </div>
                       )}
                     </>
                   )}
@@ -369,24 +434,28 @@ const DetalhesCartao: React.FC = () => {
             </div>
             <div className="mb-2">
               <span className="text-gray-600">Valor em aberto: </span>
-              <span className="font-semibold">{formatCurrency(pagamentoModal.fatura.valor_total)}</span>
+              <span className="font-semibold">
+                {formatCurrency(pagamentoModal.fatura.valor_total)}
+              </span>
             </div>
             <form
-              onSubmit={e => {
+              onSubmit={(e) => {
                 e.preventDefault();
                 handlePagamento();
               }}
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium mb-1">Valor do pagamento</label>
+                <label className="block text-sm font-medium mb-1">
+                  Valor do pagamento
+                </label>
                 <input
                   type="number"
                   min="0.01"
                   step="0.01"
                   max={pagamentoModal.fatura.valor_total}
                   value={valorPagamento}
-                  onChange={e => setValorPagamento(e.target.value)}
+                  onChange={(e) => setValorPagamento(e.target.value)}
                   className="w-full border rounded px-3 py-2"
                   placeholder="0,00"
                   required
@@ -396,15 +465,18 @@ const DetalhesCartao: React.FC = () => {
                 type="submit"
                 disabled={loadingFatura === pagamentoModal.fatura.id}
                 className={`w-full py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors ${
-                  loadingFatura === pagamentoModal.fatura.id ? 'opacity-60 cursor-not-allowed' : ''
+                  loadingFatura === pagamentoModal.fatura.id
+                    ? "opacity-60 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 {loadingFatura === pagamentoModal.fatura.id ? (
                   <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="animate-spin" size={18} /> Processando...
+                    <Loader2 className="animate-spin" size={18} />{" "}
+                    Processando...
                   </span>
                 ) : (
-                  'Confirmar Pagamento'
+                  "Confirmar Pagamento"
                 )}
               </button>
             </form>

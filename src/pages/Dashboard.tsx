@@ -97,7 +97,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+        <h1 className=" dark:text-white text-2xl font-bold text-gray-700">Dashboard</h1>
         
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4 md:mt-0">
           <select
