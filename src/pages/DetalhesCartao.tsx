@@ -184,6 +184,30 @@ const DetalhesCartao: React.FC = () => {
     }
   }, [success]);
 
+  // Calcular limite disponível corretamente:
+  const limiteDisponivel = cartao
+    ? (() => {
+        // ATENÇÃO: o campo pode vir como cartaoid ou cartaoId dependendo do backend!
+        // Vamos garantir que ambos sejam considerados.
+        const faturasCartao = faturas.filter((f: any) => {
+          const fCartaoId = f.cartao_id ?? f.cartaoId ?? f.cartaoid;
+          return String(fCartaoId) === String(cartao.id) && f.status !== "paga";
+        });
+        const totalFaturasCartao = faturasCartao.reduce(
+          (acc: number, f: any) => acc + (Number(f.valor_total) || 0),
+          0
+        );
+        const limite = Number(cartao.limite) || 0;
+        // Logs para debug
+        console.log("Faturas do cartão (não pagas):", faturasCartao);
+        console.log("totalFaturasCartao:", totalFaturasCartao);
+        console.log("Limite disponível:", limite - totalFaturasCartao);
+        return limite - totalFaturasCartao;
+      })()
+    : 0;
+  console.log("Limite disponível:", limiteDisponivel);
+  console.log("Faturas:", faturas);
+  console.log("Cartão:", cartao);
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -238,6 +262,12 @@ const DetalhesCartao: React.FC = () => {
             <p className="text-xl font-semibold">
               {formatCurrency(cartao.limite)}
             </p>
+            <p className="text-sm opacity-80 mt-2">Limite disponível</p>
+            <p className="text-lg font-semibold">
+              {isNaN(limiteDisponivel)
+                ? "R$ 0,00"
+                : formatCurrency(limiteDisponivel)}
+            </p>
           </div>
 
           <div>
@@ -261,7 +291,7 @@ const DetalhesCartao: React.FC = () => {
         <div>
           <label className="block text-sm font-medium mb-1">Mês</label>
           <select
-            className="border rounded px-2 py-1"
+            className="border rounded px-2 py-1 text-gray-800"
             value={mes}
             onChange={(e) => setMes(Number(e.target.value))}
           >
@@ -275,7 +305,7 @@ const DetalhesCartao: React.FC = () => {
         <div>
           <label className="block text-sm font-medium mb-1">Ano</label>
           <select
-            className="border rounded px-2 py-1"
+            className="border rounded px-2 py-1 text-gray-800"
             value={ano}
             onChange={(e) => setAno(Number(e.target.value))}
           >
@@ -302,7 +332,7 @@ const DetalhesCartao: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-hidden text-gray-800">
         <div className="p-4 border-b">
           <h2 className="text-xl font-semibold">Faturas</h2>
         </div>

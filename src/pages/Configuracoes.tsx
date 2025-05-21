@@ -46,22 +46,55 @@ const Configuracoes: React.FC = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    
+
     if (novaSenha !== confirmarSenha) {
       setError('As senhas não coincidem');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
-      await updateUser({ senha_atual: senhaAtual, nova_senha: novaSenha });
+      // Pegue o token do localStorage (JWT) com a chave correta usada no projeto
+      let token = localStorage.getItem('@FinanceApp:token');
+      if (!token) {
+        token = sessionStorage.getItem('@FinanceApp:token');
+      }
+      if (!token) {
+        setError('Sessão expirada. Faça login novamente.');
+        setLoading(false);
+        return;
+      }
+
+      // Troca de senha deve ser feita no endpoint /api/configuracoes/senha
+      // Use a URL do backend diretamente para evitar problemas de proxy
+      const apiUrl =
+        import.meta.env.VITE_API_URL?.replace(/\/$/, '') ||
+        'http://localhost:3000';
+
+      const response = await fetch(`${apiUrl}/api/configuracoes/senha`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          senha_atual: senhaAtual,
+          nova_senha: novaSenha,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Erro ao atualizar senha');
+      }
+
       setSenhaAtual('');
       setNovaSenha('');
       setConfirmarSenha('');
       setSuccess('Senha atualizada com sucesso!');
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Erro ao atualizar senha');
+      setError(error.message || 'Erro ao atualizar senha');
     } finally {
       setLoading(false);
     }
@@ -97,7 +130,7 @@ const Configuracoes: React.FC = () => {
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-800">
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Perfil</h2>
           

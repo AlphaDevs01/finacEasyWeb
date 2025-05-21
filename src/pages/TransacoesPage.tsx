@@ -331,7 +331,7 @@ const TransacoesPage: React.FC = () => {
       )}
 
       {showFilters && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
+        <div className="bg-white p-6 rounded-lg shadow mb-6 text-gray-800">
           <h2 className="text-lg font-semibold mb-4">Filtros</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -394,7 +394,7 @@ const TransacoesPage: React.FC = () => {
       )}
 
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
+        <div className="bg-white p-6 rounded-lg shadow mb-6 text-gray-800">
           <h2 className="text-lg font-semibold mb-4">
             Nova {activeTab === "despesas" ? "Despesa" : "Receita"}
           </h2>
@@ -547,7 +547,7 @@ const TransacoesPage: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-hidden text-gray-800">
         <div className="flex border-b">
           <button
             onClick={() => setActiveTab("despesas")}

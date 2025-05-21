@@ -123,21 +123,21 @@ const Investimentos: React.FC = () => {
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow text-gray-800">
           <h3 className="text-lg font-semibold mb-2">Total Investido</h3>
           <p className="text-2xl font-bold text-blue-600">
             {formatCurrency(calcularTotalInvestido())}
           </p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow text-gray-800">
           <h3 className="text-lg font-semibold mb-2">Rendimento Mensal</h3>
           <p className="text-2xl font-bold text-green-500">
             {formatCurrency(calcularRendimentoTotal())}
           </p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow text-gray-800">
           <h3 className="text-lg font-semibold mb-2">Rentabilidade Média</h3>
           <p className="text-2xl font-bold text-purple-600">
             {formatPercentage(
@@ -150,7 +150,7 @@ const Investimentos: React.FC = () => {
       </div>
       
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
+        <div className="bg-white p-6 rounded-lg shadow mb-6 text-gray-800">
           <h2 className="text-xl font-semibold mb-4">Novo Investimento</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -245,7 +245,7 @@ const Investimentos: React.FC = () => {
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-800">
         {investimentos.map(investimento => (
           <div key={investimento.id} className="bg-white p-6 rounded-lg shadow">
             <div className="flex justify-between items-start mb-4">

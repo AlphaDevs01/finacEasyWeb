@@ -124,7 +124,7 @@ const Relatorios: React.FC = () => {
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(Number(e.target.value))}
-            className="border rounded-md px-3 py-2"
+            className="border rounded-md px-3 py-2 text-gray-800"
           >
             {months.map((month, index) => (
               <option key={month} value={index + 1}>
@@ -136,7 +136,7 @@ const Relatorios: React.FC = () => {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="border rounded-md px-3 py-2"
+            className="border rounded-md px-3 py-2 text-gray-800"
           >
             {generateYears().map(year => (
               <option key={year} value={year}>
@@ -155,7 +155,7 @@ const Relatorios: React.FC = () => {
         </div>
       </div>
       
-      <div id="report-content" className="space-y-8">
+      <div id="report-content" className="space-y-8 text-gray-800">
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Evolução Anual</h2>
           <div className="h-80">
