@@ -20,5 +20,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "/service-worker.js", "api"]
+  "include": ["src", "/service-worker.js", "server"]
 }
