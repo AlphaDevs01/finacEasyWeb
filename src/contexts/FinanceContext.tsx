@@ -172,7 +172,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       let url = '/faturas';
       
       if (cartaoId) {
-        url = `/faturas/cartao/${cartaoId}`;
+        url = `api/faturas/cartao/${cartaoId}`;
       }
       
       const response = await api.get(url);

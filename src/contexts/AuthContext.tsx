@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       // Buscar informações do usuário
-      api.get('/configuracoes/usuario')
+      api.get('/configuracoes')
         .then(response => {
           setUser(response.data);
         })
