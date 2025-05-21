@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { CreditCard, ChevronDown, ChevronUp, Calendar, DollarSign, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { CreditCard, ChevronDown, ChevronUp, Calendar, DollarSign, XCircle, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { api } from '../services/api';
 
 const meses = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -35,8 +35,8 @@ const Faturas: React.FC = () => {
       setError('');
       try {
         const [cartoesRes, faturasRes] = await Promise.all([
-          axios.get('/cartoes'),
-          axios.get('/faturas')
+          api.get('/cartoes'),
+          api.get('/faturas')
         ]);
         setCartoes(cartoesRes.data);
         setFaturas(faturasRes.data);
@@ -66,7 +66,7 @@ const Faturas: React.FC = () => {
     if (!despesas[faturaId]) {
       setLoadingFatura(faturaId);
       try {
-        const res = await axios.get(`/faturas/${faturaId}`);
+        const res = await api.get(`/faturas/${faturaId}`);
         setDespesas(prev => ({ ...prev, [faturaId]: res.data.despesas || [] }));
       } catch (e: any) {
         setError(e.response?.data?.error || 'Erro ao buscar despesas');
@@ -98,7 +98,7 @@ const Faturas: React.FC = () => {
       // Atualiza valor_total e status se pago total
       const novoValor = Math.max(0, pagamentoModal.fatura.valor_total - valor);
       const status = novoValor === 0 ? 'paga' : 'aberta';
-      const res = await axios.put(`/faturas/${pagamentoModal.fatura.id}`, {
+      await api.put(`/faturas/${pagamentoModal.fatura.id}`, {
         valor_total: novoValor,
         status
       });
@@ -127,7 +127,6 @@ const Faturas: React.FC = () => {
     }
   }, [success]);
 
-  // Responsividade: container e grid
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
