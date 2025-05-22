@@ -73,7 +73,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         >
           <Menu size={24} />
         </button>
-        <h1 className="font-bold text-xl">Finance App</h1>
+        <h1 className="font-bold text-xl">FinancEasy</h1>
         <div className="w-6"></div> {/* Placeholder for balance */}
       </div>
       
@@ -81,7 +81,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <aside className={`fixed top-0 left-0 z-40 h-screen transition-transform bg-blue-700 text-white w-64 hidden lg:block`}>
         <div className="h-full flex flex-col">
           <div className="p-5 border-b border-blue-600">
-            <h1 className="text-2xl font-bold">Finance App</h1>
+            <h1 className="text-2xl font-bold">FinancEasy</h1>
             <p className="text-sm opacity-80 mt-1">{user?.nome}</p>
           </div>
           
@@ -140,7 +140,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="h-full flex flex-col">
           <div className="p-5 border-b border-blue-600 flex justify-between items-center">
             <div>
-              <h1 className="text-xl font-bold">Finance App</h1>
+              <h1 className="text-xl font-bold">FinancEasy</h1>
               <p className="text-sm opacity-80 mt-1">{user?.nome}</p>
             </div>
             <button 
