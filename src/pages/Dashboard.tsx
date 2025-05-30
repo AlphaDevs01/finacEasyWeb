@@ -11,46 +11,13 @@ const Dashboard: React.FC = () => {
   const { dashboard, loadDashboard, historico, loadHistorico, cartoes, loadCartoes } = useFinance();
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-
-  // Novos estados para meses anterior e próximo
-  const [prevDashboard, setPrevDashboard] = useState<any>(null);
-  const [nextDashboard, setNextDashboard] = useState<any>(null);
-
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     loadDashboard(currentMonth, currentYear);
     loadHistorico(currentYear);
     loadCartoes();
-
-    // Carregar mês anterior e próximo
-    const prev = getPrevMonthYear(currentMonth, currentYear);
-    const next = getNextMonthYear(currentMonth, currentYear);
-
-    // Função auxiliar para carregar dashboard de outro mês
-    const fetchOtherDashboards = async () => {
-      try {
-        const prevData = await loadDashboard(prev.month, prev.year, true); // true para não sobrescrever o dashboard principal
-        setPrevDashboard(prevData);
-        const nextData = await loadDashboard(next.month, next.year, true);
-        setNextDashboard(nextData);
-      } catch {
-        setPrevDashboard(null);
-        setNextDashboard(null);
-      }
-    };
-    fetchOtherDashboards();
   }, [currentMonth, currentYear]);
-
-  // Funções auxiliares para calcular mês/ano anterior e próximo
-  const getPrevMonthYear = (month: number, year: number) => {
-    if (month === 1) return { month: 12, year: year - 1 };
-    return { month: month - 1, year };
-  };
-  const getNextMonthYear = (month: number, year: number) => {
-    if (month === 12) return { month: 1, year: year + 1 };
-    return { month: month + 1, year };
-  };
   
   const months = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -147,26 +114,7 @@ const Dashboard: React.FC = () => {
       saldo: historico.saldo_mensal[index] || 0
     }));
   };
-
-  // Novo: Dados para gráfico comparativo de receitas/despesas dos 3 meses
-  const comparativeBarData = [
-    {
-      name: months[getPrevMonthYear(currentMonth, currentYear).month - 1] + ' ' + getPrevMonthYear(currentMonth, currentYear).year,
-      receitas: prevDashboard?.receitas || 0,
-      despesas: prevDashboard?.despesas || 0,
-    },
-    {
-      name: months[currentMonth - 1] + ' ' + currentYear,
-      receitas: dashboard?.receitas || 0,
-      despesas: dashboard?.despesas || 0,
-    },
-    {
-      name: months[getNextMonthYear(currentMonth, currentYear).month - 1] + ' ' + getNextMonthYear(currentMonth, currentYear).year,
-      receitas: nextDashboard?.receitas || 0,
-      despesas: nextDashboard?.despesas || 0,
-    },
-  ];
-
+  
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
@@ -430,26 +378,6 @@ const Dashboard: React.FC = () => {
                   </button>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* NOVO: Gráfico comparativo de receitas/despesas dos 3 meses */}
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow mb-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-              Comparativo Receitas e Despesas (Mês Anterior, Atual e Próximo)
-            </h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={comparativeBarData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Legend />
-                  <Bar dataKey="receitas" fill="#10b981" name="Receitas" />
-                  <Bar dataKey="despesas" fill="#ef4444" name="Despesas" />
-                </BarChart>
-              </ResponsiveContainer>
             </div>
           </div>
         </>

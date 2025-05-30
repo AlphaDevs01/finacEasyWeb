@@ -36,7 +36,7 @@ const Relatorios: React.FC = () => {
   
   useEffect(() => {
     loadHistorico(selectedYear);
-    loadDashboard(selectedMonth, selectedYear);
+    loadDashboard(selectedMonth - 1, selectedYear); // <-- zero-based
   }, [selectedYear, selectedMonth]);
   
   const months = [
