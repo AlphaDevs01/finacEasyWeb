@@ -8,6 +8,7 @@ import {
   ArrowDownCircle,
   Trash2,
   AlertCircle,
+  Edit, // ADICIONADO
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -47,6 +48,8 @@ const TransacoesPage: React.FC = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Novo estado para edição
+  const [editId, setEditId] = useState<number | null>(null);
 
   useEffect(() => {
     loadData();
@@ -224,6 +227,64 @@ const TransacoesPage: React.FC = () => {
     }
   };
 
+  // Função para iniciar edição
+  const handleEdit = (item: any) => {
+    setEditId(item.id);
+    setDescricao(item.descricao);
+    setValor(String(item.valor));
+    setData(item.data.slice(0, 10));
+    setCategoria(item.categoria);
+    if (activeTab === "despesas") {
+      setTipo(item.tipo || "conta");
+      setCartaoId(item.cartaoId ? String(item.cartaoId) : "");
+      setParcelas(1);
+    }
+    setShowForm(true);
+  };
+
+  // Função para salvar edição
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!descricao || !valor || !data || !categoria) {
+      setError("Preencha todos os campos obrigatórios");
+      return;
+    }
+    try {
+      setLoading(true);
+      if (activeTab === "despesas") {
+        await salvarDespesa({
+          id: editId,
+          descricao,
+          valor: parseFloat(valor),
+          data,
+          categoria,
+          tipo,
+          cartaoId: tipo === "cartao" ? parseInt(cartaoId) : undefined,
+        });
+      } else {
+        await salvarReceita({
+          id: editId,
+          descricao,
+          valor: parseFloat(valor),
+          data,
+          categoria,
+        });
+      }
+      setShowForm(false);
+      setEditId(null);
+      resetForm();
+      loadData();
+    } catch (error: any) {
+      setError(
+        error.response?.data?.error ||
+          `Erro ao editar ${activeTab === "despesas" ? "despesa" : "receita"}`
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async (id: number, type: "despesa" | "receita") => {
     if (!window.confirm(`Tem certeza que deseja excluir esta ${type}?`)) {
       return;
@@ -299,6 +360,27 @@ const TransacoesPage: React.FC = () => {
     return Array.from({ length: 6 }, (_, i) => currentYear - i);
   };
 
+  // Navegação entre meses
+  const goToPrevMonth = () => {
+    setMesFilter((prev) => {
+      if (prev === 1) {
+        setAnoFilter((y) => y - 1);
+        return 12;
+      }
+      return prev - 1;
+    });
+  };
+
+  const goToNextMonth = () => {
+    setMesFilter((prev) => {
+      if (prev === 12) {
+        setAnoFilter((y) => y + 1);
+        return 1;
+      }
+      return prev + 1;
+    });
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -321,6 +403,48 @@ const TransacoesPage: React.FC = () => {
             Nova {activeTab === "despesas" ? "Despesa" : "Receita"}
           </button>
         </div>
+      </div>
+
+      {/* Navegação de mês/ano */}
+      <div className="flex items-center gap-2 mb-4">
+        <button
+          onClick={goToPrevMonth}
+          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+          title="Mês anterior"
+          type="button"
+        >
+          &#8592;
+        </button>
+        <select
+          value={mesFilter}
+          onChange={(e) => setMesFilter(parseInt(e.target.value))}
+          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-gray-800 dark:text-white"
+        >
+          {months.map((month, index) => (
+            <option key={month} value={index + 1}>
+              {month}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={goToNextMonth}
+          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+          title="Próximo mês"
+          type="button"
+        >
+          &#8594;
+        </button>
+        <select
+          value={anoFilter}
+          onChange={(e) => setAnoFilter(parseInt(e.target.value))}
+          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-gray-800 dark:text-white"
+        >
+          {generateYears().map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
       </div>
 
       {error && (
@@ -396,10 +520,11 @@ const TransacoesPage: React.FC = () => {
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow mb-6 text-gray-800">
           <h2 className="text-lg font-semibold mb-4">
-            Nova {activeTab === "despesas" ? "Despesa" : "Receita"}
+            {editId
+              ? `Editar ${activeTab === "despesas" ? "Despesa" : "Receita"}`
+              : `Nova ${activeTab === "despesas" ? "Despesa" : "Receita"}`}
           </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={editId ? handleSaveEdit : handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -526,13 +651,13 @@ const TransacoesPage: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setShowForm(false);
+                  setEditId(null);
                   resetForm();
                 }}
                 className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
                 Cancelar
               </button>
-
               <button
                 type="submit"
                 disabled={loading}
@@ -540,7 +665,11 @@ const TransacoesPage: React.FC = () => {
                   loading ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
-                {loading ? "Salvando..." : "Salvar"}
+                {loading
+                  ? "Salvando..."
+                  : editId
+                  ? "Salvar Alterações"
+                  : "Salvar"}
               </button>
             </div>
           </form>
@@ -607,7 +736,13 @@ const TransacoesPage: React.FC = () => {
                     {activeTab === "despesas" ? "-" : "+"}
                     {formatCurrency(item.valor)}
                   </p>
-
+                  {/* Botão Editar */}
+                  <button
+                    onClick={() => handleEdit(item)}
+                    className="p-2 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors"
+                  >
+                    <Edit size={20} />
+                  </button>
                   <button
                     onClick={() =>
                       handleDelete(
