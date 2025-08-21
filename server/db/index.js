@@ -65,6 +65,9 @@ const initDatabase = async () => {
         cartaoId INTEGER REFERENCES cartoes(id) ON DELETE SET NULL,
         faturaId INTEGER REFERENCES faturas(id) ON DELETE SET NULL,
         categoria VARCHAR(50) NOT NULL,
+        status VARCHAR(20) DEFAULT 'pendente',
+        data_vencimento DATE,
+        observacoes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -77,6 +80,9 @@ const initDatabase = async () => {
         valor DECIMAL(10, 2) NOT NULL,
         data DATE NOT NULL,
         categoria VARCHAR(50) NOT NULL,
+        status VARCHAR(20) DEFAULT 'pendente',
+        data_vencimento DATE,
+        observacoes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -99,7 +105,37 @@ const initDatabase = async () => {
         userId INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
         notificacoes_email BOOLEAN DEFAULT FALSE,
         tema VARCHAR(20) DEFAULT 'claro',
+        alerta_limite_cartao INTEGER DEFAULT 80,
+        alerta_vencimento_dias INTEGER DEFAULT 3,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tabela de metas de gastos
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS metas_gastos (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        categoria VARCHAR(50) NOT NULL,
+        valor_limite DECIMAL(10, 2) NOT NULL,
+        mes INTEGER NOT NULL,
+        ano INTEGER NOT NULL,
+        ativo BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(userId, categoria, mes, ano)
+      );
+    `);
+
+    // Tabela de notificações
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS notificacoes (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        tipo VARCHAR(50) NOT NULL,
+        titulo VARCHAR(255) NOT NULL,
+        mensagem TEXT NOT NULL,
+        lida BOOLEAN DEFAULT FALSE,
+        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 

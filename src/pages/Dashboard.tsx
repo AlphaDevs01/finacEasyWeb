@@ -5,19 +5,31 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, Legend, PieChart, Pie, Cell
 } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, CreditCard, TrendingUp, DollarSign } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, CreditCard, TrendingUp, DollarSign, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import { api } from '../services/api';
 
 const Dashboard: React.FC = () => {
   const { dashboard, loadDashboard, historico, loadHistorico, cartoes, loadCartoes } = useFinance();
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [alertas, setAlertas] = useState<any[]>([]);
   const navigate = useNavigate();
   
   useEffect(() => {
     loadDashboard(currentMonth, currentYear);
     loadHistorico(currentYear);
     loadCartoes();
+    loadAlertas();
   }, [currentMonth, currentYear]);
+  
+  const loadAlertas = async () => {
+    try {
+      const response = await api.get('/dashboard/alertas');
+      setAlertas(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar alertas:', error);
+    }
+  };
   
   const months = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -118,13 +130,13 @@ const Dashboard: React.FC = () => {
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-        <h1 className=" text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100 tracking-tight">Dashboard</h1>
         
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4 md:mt-0 items-center">
           {/* Botão mês anterior */}
           <button
             onClick={goToPrevMonth}
-            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+            className="px-3 py-2 rounded-xl bg-white dark:bg-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-200 shadow-soft border border-neutral-200 dark:border-neutral-600 transition-all duration-200 hover:scale-105"
             title="Mês anterior"
             type="button"
           >
@@ -133,7 +145,7 @@ const Dashboard: React.FC = () => {
           <select
             value={currentMonth}
             onChange={changeMonth}
-            className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-gray-800 dark:text-white"
+            className="border border-neutral-300 dark:border-neutral-600 rounded-xl px-4 py-2 bg-white dark:bg-neutral-700 dark:text-neutral-100 shadow-soft focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           >
             {months.map((month, index) => (
               <option key={index} value={index + 1}>
@@ -144,7 +156,7 @@ const Dashboard: React.FC = () => {
           {/* Botão próximo mês */}
           <button
             onClick={goToNextMonth}
-            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+            className="px-3 py-2 rounded-xl bg-white dark:bg-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-200 shadow-soft border border-neutral-200 dark:border-neutral-600 transition-all duration-200 hover:scale-105"
             title="Próximo mês"
             type="button"
           >
@@ -153,7 +165,7 @@ const Dashboard: React.FC = () => {
           <select
             value={currentYear}
             onChange={changeYear}
-            className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-gray-800 dark:text-white"
+            className="border border-neutral-300 dark:border-neutral-600 rounded-xl px-4 py-2 bg-white dark:bg-neutral-700 dark:text-neutral-100 shadow-soft focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           >
             {generateYears().map(year => (
               <option key={year} value={year}>
@@ -167,18 +179,18 @@ const Dashboard: React.FC = () => {
       {dashboard ? (
         <>
           {/* Cards principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Saldo */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 hover:shadow-strong transition-all duration-300 hover:scale-[1.02]">
               <div className="flex justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Saldo do Mês</p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Saldo do Mês</p>
                   <h3 className={`text-2xl font-bold ${dashboard.saldo >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {formatCurrency(dashboard.saldo)}
                   </h3>
                 </div>
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                  dashboard.saldo >= 0 ? 'bg-green-100 text-green-500' : 'bg-red-100 text-red-500'
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${
+                  dashboard.saldo >= 0 ? 'bg-green-100 text-green-500' : 'bg-accent-100 text-accent-500'
                 }`}>
                   {dashboard.saldo >= 0 ? (
                     <ArrowUpRight />
@@ -190,56 +202,120 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Receitas */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 hover:shadow-strong transition-all duration-300 hover:scale-[1.02]">
               <div className="flex justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Receitas</p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Receitas</p>
                   <h3 className="text-2xl font-bold text-green-500">
                     {formatCurrency(dashboard.receitas)}
                   </h3>
+                  {dashboard.receitas_pendentes > 0 && (
+                    <p className="text-xs text-yellow-600 mt-1">
+                      {formatCurrency(dashboard.receitas_pendentes)} pendentes
+                    </p>
+                  )}
                 </div>
-                <div className="h-10 w-10 rounded-full flex items-center justify-center bg-green-100 text-green-500">
+                <div className="h-12 w-12 rounded-2xl flex items-center justify-center bg-green-100 text-green-500">
                   <DollarSign />
                 </div>
               </div>
             </div>
             
             {/* Despesas */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 hover:shadow-strong transition-all duration-300 hover:scale-[1.02]">
               <div className="flex justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Despesas</p>
-                  <h3 className="text-2xl font-bold text-red-500">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Despesas</p>
+                  <h3 className="text-2xl font-bold text-accent-500">
                     {formatCurrency(dashboard.despesas)}
                   </h3>
+                  <div className="flex gap-2 mt-1">
+                    {dashboard.despesas_pendentes > 0 && (
+                      <p className="text-xs text-yellow-600">
+                        {formatCurrency(dashboard.despesas_pendentes)} pendentes
+                      </p>
+                    )}
+                    {dashboard.despesas_vencidas > 0 && (
+                      <p className="text-xs text-accent-600">
+                        {formatCurrency(dashboard.despesas_vencidas)} vencidas
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="h-10 w-10 rounded-full flex items-center justify-center bg-red-100 text-red-500">
+                <div className="h-12 w-12 rounded-2xl flex items-center justify-center bg-accent-100 text-accent-500">
                   <ArrowDownRight />
                 </div>
               </div>
             </div>
             
-            {/* Faturas Pendentes */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
+            {/* Limite dos Cartões */}
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 hover:shadow-strong transition-all duration-300 hover:scale-[1.02]">
               <div className="flex justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Faturas Pendentes</p>
-                  <h3 className="text-2xl font-bold text-yellow-500">
-                    {formatCurrency(dashboard.faturas_pendentes)}
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Limite Disponível</p>
+                  <h3 className="text-2xl font-bold text-primary-500">
+                    {formatCurrency(dashboard.limite_disponivel_cartoes || 0)}
                   </h3>
+                  {dashboard.limite_total_cartoes > 0 && (
+                    <p className="text-xs text-neutral-500 mt-1">
+                      {dashboard.percentual_limite_usado.toFixed(1)}% utilizado
+                    </p>
+                  )}
                 </div>
-                <div className="h-10 w-10 rounded-full flex items-center justify-center bg-yellow-100 text-yellow-500">
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                  dashboard.percentual_limite_usado >= 80 
+                    ? 'bg-accent-100 text-accent-500' 
+                    : 'bg-primary-100 text-primary-500'
+                }`}>
                   <CreditCard />
                 </div>
               </div>
             </div>
           </div>
           
+          {/* Alertas */}
+          {alertas.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-4 text-neutral-800 dark:text-neutral-100">Alertas</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {alertas.map((alerta, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-xl border-l-4 shadow-soft bg-white dark:bg-neutral-700 ${
+                      alerta.prioridade === 'alta'
+                        ? 'bg-accent-50 dark:bg-accent-900/20 border-accent-500'
+                        : alerta.prioridade === 'media'
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500'
+                        : 'bg-primary-50 dark:bg-primary-900/20 border-primary-500'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle
+                        size={20}
+                        className={
+                          alerta.prioridade === 'alta'
+                            ? 'text-accent-500'
+                            : alerta.prioridade === 'media'
+                            ? 'text-yellow-500'
+                            : 'text-primary-500'
+                        }
+                      />
+                      <div>
+                        <h3 className="font-medium text-neutral-800 dark:text-neutral-100">{alerta.titulo}</h3>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">{alerta.mensagem}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           {/* Gráficos */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Gráfico de barras - Despesas e Receitas Diárias */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Movimento Diário</h3>
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50">
+              <h3 className="text-xl font-bold mb-6 text-neutral-800 dark:text-neutral-100">Movimento Diário</h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={prepareBarChartData()} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
@@ -249,15 +325,15 @@ const Dashboard: React.FC = () => {
                     <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                     <Legend />
                     <Bar dataKey="receitas" fill="#10b981" name="Receitas" />
-                    <Bar dataKey="despesas" fill="#ef4444" name="Despesas" />
+                    <Bar dataKey="despesas" fill="#dc2626" name="Despesas" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
             
             {/* Gráfico de linha - Evolução Anual */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Evolução Anual</h3>
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50">
+              <h3 className="text-xl font-bold mb-6 text-neutral-800 dark:text-neutral-100">Evolução Anual</h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={prepareLineChartData()} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
@@ -267,8 +343,8 @@ const Dashboard: React.FC = () => {
                     <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                     <Legend />
                     <Line type="monotone" dataKey="receitas" stroke="#10b981" name="Receitas" />
-                    <Line type="monotone" dataKey="despesas" stroke="#ef4444" name="Despesas" />
-                    <Line type="monotone" dataKey="saldo" stroke="#3b82f6" name="Saldo" />
+                    <Line type="monotone" dataKey="despesas" stroke="#dc2626" name="Despesas" />
+                    <Line type="monotone" dataKey="saldo" stroke="#147361" name="Saldo" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -276,10 +352,10 @@ const Dashboard: React.FC = () => {
           </div>
           
           {/* Seção inferior - Categorias e Cartões */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Categorias de Despesas */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow lg:col-span-1">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Despesas por Categoria</h3>
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 lg:col-span-1">
+              <h3 className="text-xl font-bold mb-6 text-neutral-800 dark:text-neutral-100">Despesas por Categoria</h3>
               {(dashboard.categorias_despesas && dashboard.categorias_despesas.length > 0) ? (
                 <div className="h-64 flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
@@ -313,7 +389,7 @@ const Dashboard: React.FC = () => {
                           const categoria = dashboard.categorias_despesas[index]?.categoria || value;
                           const total = dashboard.categorias_despesas[index]?.total || 0;
                           return (
-                            <span className="dark:text-white text-gray-800">
+                            <span className="dark:text-neutral-100 text-neutral-800">
                               {categoria}: {formatCurrency(Number(total))}
                             </span>
                           );
@@ -323,19 +399,19 @@ const Dashboard: React.FC = () => {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                <p className="text-neutral-500 dark:text-neutral-400 text-center py-8">
                   Nenhuma despesa registrada neste mês
                 </p>
               )}
             </div>
             
             {/* Cartões */}
-            <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow lg:col-span-2">
+            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 lg:col-span-2">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Seus Cartões</h3>
+                <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100">Seus Cartões</h3>
                 <button 
                   onClick={() => navigate('/cartoes')}
-                  className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors"
                 >
                   Ver todos
                 </button>
@@ -347,7 +423,7 @@ const Dashboard: React.FC = () => {
                     <div 
                       key={cartao.id}
                       onClick={() => navigate(`/cartoes/${cartao.id}`)}
-                      className="bg-gradient-to-r from-blue-500 to-blue-700 p-4 rounded-lg text-white shadow cursor-pointer hover:shadow-lg transition-shadow"
+                      className="bg-gradient-to-r from-primary-500 to-secondary-500 p-5 rounded-2xl text-white shadow-medium cursor-pointer hover:shadow-strong transition-all duration-300 hover:scale-[1.02]"
                     >
                       <div className="flex justify-between items-center mb-2">
                         <span className="font-medium">{cartao.nome}</span>
@@ -368,11 +444,11 @@ const Dashboard: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
-                  <p className="text-gray-600 dark:text-gray-300 mb-3">Você ainda não tem cartões cadastrados</p>
+                <div className="bg-neutral-50 dark:bg-neutral-600 rounded-2xl p-6 text-center">
+                  <p className="text-neutral-600 dark:text-neutral-300 mb-4">Você ainda não tem cartões cadastrados</p>
                   <button
                     onClick={() => navigate('/cartoes')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    className="px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium"
                   >
                     Adicionar Cartão
                   </button>
@@ -383,7 +459,7 @@ const Dashboard: React.FC = () => {
         </>
       ) : (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
         </div>
       )}
     </div>

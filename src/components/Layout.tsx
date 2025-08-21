@@ -13,7 +13,9 @@ import {
   LogOut, 
   Menu, 
   X,
-  ChevronRight 
+  ChevronRight,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -41,6 +43,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       document.documentElement.classList.remove('dark');
     }
   }, [theme]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
   
   const handleLogout = () => {
     logout();
@@ -50,8 +62,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/cartoes', label: 'Cartões', icon: <CreditCard size={20} /> },
+    { path: '/faturas', label: 'Faturas', icon: <CreditCard size={20} /> },
     { path: '/transacoes', label: 'Receitas/Despesas', icon: <DollarSign size={20} /> },
     { path: '/investimentos', label: 'Investimentos', icon: <TrendingUp size={20} /> },
+    { path: '/metas', label: 'Metas de Gastos', icon: <TrendingUp size={20} /> },
     { path: '/relatorios', label: 'Relatórios', icon: <BarChart4 size={20} /> },
     { path: '/importacao', label: 'Importar CSV', icon: <Upload size={20} /> },
     { path: '/configuracoes', label: 'Configurações', icon: <Settings size={20} /> }
@@ -64,28 +78,40 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
   
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'dark:bg-gray-900 dark:text-white' : 'bg-gray-100 text-gray-800'}`}>
+    <div className="min-h-screen bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-100 transition-colors duration-300">
       {/* Mobile header */}
-      <div className="lg:hidden bg-blue-600 text-white p-4 flex justify-between items-center">
+      <div className="lg:hidden bg-gradient-to-r from-primary-500 to-secondary-500 text-white p-4 flex justify-between items-center shadow-medium">
         <button 
-          className="p-1 rounded focus:outline-none focus:ring-2 focus:ring-white"
+          className="p-2 rounded-xl hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors"
           onClick={() => setSidebarOpen(true)}
         >
           <Menu size={24} />
         </button>
-        <h1 className="font-bold text-xl">FinancEasy</h1>
-        <div className="w-6"></div> {/* Placeholder for balance */}
+        <h1 className="font-bold text-xl tracking-tight">FinancEasy</h1>
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-xl hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors"
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
       </div>
       
       {/* Sidebar - Desktop */}
-      <aside className={`fixed top-0 left-0 z-40 h-screen transition-transform bg-blue-700 text-white w-64 hidden lg:block`}>
+      <aside className="fixed top-0 left-0 z-40 h-screen transition-transform bg-gradient-to-b from-primary-500 to-secondary-500 text-white w-64 hidden lg:block shadow-strong">
         <div className="h-full flex flex-col">
-          <div className="p-5 border-b border-blue-600">
-            <h1 className="text-2xl font-bold">FinancEasy</h1>
-            <p className="text-sm opacity-80 mt-1">{user?.nome}</p>
+          <div className="p-6 border-b border-white/10">
+            <h1 className="text-2xl font-bold tracking-tight">FinancEasy</h1>
+            <p className="text-sm opacity-80 mt-2">{user?.nome}</p>
+            <button
+              onClick={toggleTheme}
+              className="mt-3 p-2 rounded-xl hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors flex items-center gap-2 text-sm"
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+            </button>
           </div>
           
-          <nav className="p-4 flex-grow">
+          <nav className="p-4 flex-grow overflow-y-auto">
             <ul className="space-y-2">
               {menuItems.map((item) => (
                 <li key={item.path}>
@@ -95,16 +121,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       e.preventDefault();
                       navigate(item.path);
                     }}
-                    className={`flex items-center p-3 rounded-lg transition-all ${
+                    className={`flex items-center p-3 rounded-xl transition-all duration-200 ${
                       isActive(item.path)
-                        ? 'bg-blue-800 text-white font-medium'
-                        : 'hover:bg-blue-600'
+                        ? 'bg-white/20 text-white font-medium shadow-soft backdrop-blur-sm'
+                        : 'hover:bg-white/10 hover:translate-x-1'
                     }`}
                   >
                     {item.icon}
                     <span className="ml-3">{item.label}</span>
                     {isActive(item.path) && (
-                      <ChevronRight className="ml-auto" size={16} />
+                      <ChevronRight className="ml-auto opacity-60" size={16} />
                     )}
                   </a>
                 </li>
@@ -112,10 +138,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </ul>
           </nav>
           
-          <div className="p-4 border-t border-blue-600">
+          <div className="p-4 border-t border-white/10">
             <button
               onClick={handleLogout}
-              className="flex items-center w-full p-3 text-white rounded-lg hover:bg-blue-600 transition-all"
+              className="flex items-center w-full p-3 text-white rounded-xl hover:bg-white/10 transition-all duration-200"
             >
               <LogOut size={20} />
               <span className="ml-3">Sair</span>
@@ -126,32 +152,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       {/* Sidebar - Mobile */}
       <div 
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden ${
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${
           sidebarOpen ? 'block' : 'hidden'
         }`}
         onClick={closeSidebar}
       />
       
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-64 bg-blue-700 text-white transform ${
+        className={`fixed top-0 left-0 z-50 h-screen w-64 bg-gradient-to-b from-primary-500 to-secondary-500 text-white transform ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out lg:hidden`}
       >
         <div className="h-full flex flex-col">
-          <div className="p-5 border-b border-blue-600 flex justify-between items-center">
+          <div className="p-6 border-b border-white/10 flex justify-between items-center">
             <div>
-              <h1 className="text-xl font-bold">FinancEasy</h1>
-              <p className="text-sm opacity-80 mt-1">{user?.nome}</p>
+              <h1 className="text-xl font-bold tracking-tight">FinancEasy</h1>
+              <p className="text-sm opacity-80 mt-2">{user?.nome}</p>
             </div>
             <button 
-              className="p-1 rounded focus:outline-none focus:ring-2 focus:ring-white"
+              className="p-2 rounded-xl hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors"
               onClick={closeSidebar}
             >
               <X size={24} />
             </button>
           </div>
           
-          <nav className="p-4 flex-grow">
+          <nav className="p-4 flex-grow overflow-y-auto">
             <ul className="space-y-2">
               {menuItems.map((item) => (
                 <li key={item.path}>
@@ -162,16 +188,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       navigate(item.path);
                       closeSidebar();
                     }}
-                    className={`flex items-center p-3 rounded-lg transition-all ${
+                    className={`flex items-center p-3 rounded-xl transition-all duration-200 ${
                       isActive(item.path)
-                        ? 'bg-blue-800 text-white font-medium'
-                        : 'hover:bg-blue-600'
+                        ? 'bg-white/20 text-white font-medium shadow-soft backdrop-blur-sm'
+                        : 'hover:bg-white/10'
                     }`}
                   >
                     {item.icon}
                     <span className="ml-3">{item.label}</span>
                     {isActive(item.path) && (
-                      <ChevronRight className="ml-auto" size={16} />
+                      <ChevronRight className="ml-auto opacity-60" size={16} />
                     )}
                   </a>
                 </li>
@@ -179,10 +205,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </ul>
           </nav>
           
-          <div className="p-4 border-t border-blue-600">
+          <div className="p-4 border-t border-white/10">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center w-full p-3 text-white rounded-xl hover:bg-white/10 transition-all duration-200 mb-2"
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              <span className="ml-3">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>
+            </button>
             <button
               onClick={handleLogout}
-              className="flex items-center w-full p-3 text-white rounded-lg hover:bg-blue-600 transition-all"
+              className="flex items-center w-full p-3 text-white rounded-xl hover:bg-white/10 transition-all duration-200"
             >
               <LogOut size={20} />
               <span className="ml-3">Sair</span>
@@ -193,7 +226,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       {/* Main content */}
       <div className="lg:ml-64 min-h-screen">
-        <main className="p-4">
+        <main className="p-4 lg:p-6 animate-fade-in">
           {children}
         </main>
       </div>

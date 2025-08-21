@@ -214,7 +214,7 @@ const Cartoes: React.FC = () => {
         {cartoes.map(cartao => (
           <div
             key={cartao.id}
-            className="bg-gradient-to-r from-blue-500 to-blue-700 p-4 rounded-lg text-white shadow relative group"
+            className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50"
           >
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button

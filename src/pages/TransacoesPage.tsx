@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useFinance } from "../contexts/FinanceContext";
+import { useToast } from "../components/ui/Toast";
+import SearchInput from "../components/ui/SearchInput";
+import FilterPanel from "../components/ui/FilterPanel";
+import ExportButton from "../components/ui/ExportButton";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
+import { TableSkeleton } from "../components/ui/SkeletonLoader";
 import {
   Plus,
   Filter,
@@ -25,12 +31,18 @@ const TransacoesPage: React.FC = () => {
     cartoes,
     loadCartoes,
   } = useFinance();
+  const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<"despesas" | "receitas">(
     "despesas"
   );
   const [showForm, setShowForm] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    item: any;
+    type: 'despesa' | 'receita';
+  }>({ isOpen: false, item: null, type: 'despesa' });
 
   // Form states
   const [descricao, setDescricao] = useState("");
@@ -40,6 +52,9 @@ const TransacoesPage: React.FC = () => {
   const [tipo, setTipo] = useState("conta");
   const [cartaoId, setCartaoId] = useState("");
   const [parcelas, setParcelas] = useState(1); // Novo campo para parcelas
+  const [status, setStatus] = useState("pendente");
+  const [dataVencimento, setDataVencimento] = useState("");
+  const [observacoes, setObservacoes] = useState("");
 
   // Filter states
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
@@ -48,12 +63,28 @@ const TransacoesPage: React.FC = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
   // Novo estado para edição
   const [editId, setEditId] = useState<number | null>(null);
 
   useEffect(() => {
-    loadData();
-    loadCartoes();
+    const initData = async () => {
+      try {
+        setDataLoading(true);
+        await loadCartoes();
+        await loadData();
+      } catch (error) {
+        showToast({
+          type: 'error',
+          title: 'Erro ao carregar dados',
+          message: 'Não foi possível carregar as transações'
+        });
+      } finally {
+        setDataLoading(false);
+      }
+    };
+    
+    initData();
   }, [mesFilter, anoFilter, categoriaFilter]);
 
   const loadData = () => {
@@ -203,6 +234,9 @@ const TransacoesPage: React.FC = () => {
           categoria,
           tipo,
           cartaoId: tipo === "cartao" ? parseInt(cartaoId) : undefined,
+          status,
+          data_vencimento: dataVencimento || undefined,
+          observacoes
         });
       } else {
         // Receita
@@ -211,17 +245,30 @@ const TransacoesPage: React.FC = () => {
           valor: parseFloat(valor),
           data,
           categoria,
+          status,
+          data_vencimento: dataVencimento || undefined,
+          observacoes
         });
       }
 
       setShowForm(false);
       resetForm();
       loadData();
+      showToast({
+        type: 'success',
+        title: 'Sucesso!',
+        message: `${activeTab === 'despesas' ? 'Despesa' : 'Receita'} salva com sucesso`
+      });
     } catch (error: any) {
       setError(
         error.response?.data?.error ||
           `Erro ao salvar ${activeTab === "despesas" ? "despesa" : "receita"}`
       );
+      showToast({
+        type: 'error',
+        title: 'Erro ao salvar',
+        message: error.response?.data?.error || 'Ocorreu um erro inesperado'
+      });
     } finally {
       setLoading(false);
     }
@@ -234,6 +281,9 @@ const TransacoesPage: React.FC = () => {
     setValor(String(item.valor));
     setData(item.data.slice(0, 10));
     setCategoria(item.categoria);
+    setStatus(item.status || 'pendente');
+    setDataVencimento(item.data_vencimento ? item.data_vencimento.slice(0, 10) : '');
+    setObservacoes(item.observacoes || '');
     if (activeTab === "despesas") {
       setTipo(item.tipo || "conta");
       setCartaoId(item.cartaoId ? String(item.cartaoId) : "");
@@ -261,6 +311,9 @@ const TransacoesPage: React.FC = () => {
           categoria,
           tipo,
           cartaoId: tipo === "cartao" ? parseInt(cartaoId) : undefined,
+          status,
+          data_vencimento: dataVencimento || undefined,
+          observacoes
         });
       } else {
         await salvarReceita({
@@ -269,36 +322,101 @@ const TransacoesPage: React.FC = () => {
           valor: parseFloat(valor),
           data,
           categoria,
+          status,
+          data_vencimento: dataVencimento || undefined,
+          observacoes
         });
       }
       setShowForm(false);
       setEditId(null);
       resetForm();
       loadData();
+      showToast({
+        type: 'success',
+        title: 'Sucesso!',
+        message: `${activeTab === 'despesas' ? 'Despesa' : 'Receita'} editada com sucesso`
+      });
     } catch (error: any) {
       setError(
         error.response?.data?.error ||
           `Erro ao editar ${activeTab === "despesas" ? "despesa" : "receita"}`
       );
+      showToast({
+        type: 'error',
+        title: 'Erro ao editar',
+        message: error.response?.data?.error || 'Ocorreu um erro inesperado'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: number, type: "despesa" | "receita") => {
-    if (!window.confirm(`Tem certeza que deseja excluir esta ${type}?`)) {
-      return;
-    }
-
+  const handleStatusChange = async (item: any, newStatus: string) => {
     try {
-      if (type === "despesa") {
-        await excluirDespesa(id);
+      if (activeTab === "despesas") {
+        await salvarDespesa({
+          id: item.id,
+          descricao: item.descricao,
+          valor: item.valor,
+          data: item.data,
+          categoria: item.categoria,
+          tipo: item.tipo,
+          cartaoId: item.cartaoId,
+          status: newStatus,
+          data_vencimento: item.data_vencimento,
+          observacoes: item.observacoes
+        });
       } else {
-        await excluirReceita(id);
+        await salvarReceita({
+          id: item.id,
+          descricao: item.descricao,
+          valor: item.valor,
+          data: item.data,
+          categoria: item.categoria,
+          status: newStatus,
+          data_vencimento: item.data_vencimento,
+          observacoes: item.observacoes
+        });
       }
       loadData();
+      showToast({
+        type: 'success',
+        title: 'Status atualizado!',
+        message: `${activeTab === 'despesas' ? 'Despesa' : 'Receita'} marcada como ${newStatus}`
+      });
+    } catch (error: any) {
+      showToast({
+        type: 'error',
+        title: 'Erro ao atualizar status',
+        message: error.response?.data?.error || 'Ocorreu um erro inesperado'
+      });
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    const { item, type } = confirmDialog;
+    
+    try {
+      if (type === "despesa") {
+        await excluirDespesa(item.id);
+      } else {
+        await excluirReceita(item.id);
+      }
+      loadData();
+      showToast({
+        type: 'success',
+        title: 'Sucesso!',
+        message: `${type === 'despesa' ? 'Despesa' : 'Receita'} excluída com sucesso`
+      });
     } catch (error: any) {
       setError(error.response?.data?.error || `Erro ao excluir ${type}`);
+      showToast({
+        type: 'error',
+        title: 'Erro ao excluir',
+        message: error.response?.data?.error || 'Ocorreu um erro inesperado'
+      });
+    } finally {
+      setConfirmDialog({ isOpen: false, item: null, type: 'despesa' });
     }
   };
 
@@ -310,6 +428,9 @@ const TransacoesPage: React.FC = () => {
     setTipo("conta");
     setCartaoId("");
     setParcelas(1);
+    setStatus("pendente");
+    setDataVencimento("");
+    setObservacoes("");
   };
 
   const formatCurrency = (value: number) => {
@@ -339,6 +460,23 @@ const TransacoesPage: React.FC = () => {
     "Investimentos",
     "Outros",
   ];
+
+  const statusOptions = [
+    { value: 'pendente', label: 'Pendente', color: 'yellow' },
+    { value: 'paga', label: activeTab === 'despesas' ? 'Paga' : 'Recebida', color: 'green' },
+    { value: 'vencida', label: 'Vencida', color: 'red' },
+    { value: 'cancelada', label: 'Cancelada', color: 'gray' }
+  ];
+
+  const getStatusColor = (status: string) => {
+    const statusOption = statusOptions.find(s => s.value === status);
+    return statusOption?.color || 'gray';
+  };
+
+  const getStatusLabel = (status: string) => {
+    const statusOption = statusOptions.find(s => s.value === status);
+    return statusOption?.label || status;
+  };
 
   const months = [
     "Janeiro",
@@ -381,19 +519,49 @@ const TransacoesPage: React.FC = () => {
     });
   };
 
+  // Filtrar dados baseado na busca
+  const filteredData = (activeTab === "despesas" ? despesas : receitas).filter(item =>
+    item.descricao.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.categoria.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Configuração dos filtros
+  const filterOptions = [
+    {
+      key: 'categoria',
+      label: 'Categoria',
+      type: 'select' as const,
+      options: (activeTab === 'despesas' ? categoriasDespesas : categoriasReceitas).map(cat => ({
+        value: cat,
+        label: cat
+      }))
+    }
+  ];
+
+  const filterValues = {
+    categoria: categoriaFilter
+  };
+
+  const handleFilterChange = (key: string, value: any) => {
+    if (key === 'categoria') {
+      setCategoriaFilter(value);
+    }
+  };
+
+  const handleFilterClear = () => {
+    setCategoriaFilter('');
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Receitas e Despesas</h1>
 
         <div className="flex gap-2">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-          >
-            <Filter size={20} />
-            Filtros
-          </button>
+          <ExportButton
+            data={filteredData}
+            filename={`${activeTab}-${mesFilter}-${anoFilter}`}
+          />
 
           <button
             onClick={() => setShowForm(!showForm)}
@@ -454,68 +622,20 @@ const TransacoesPage: React.FC = () => {
         </div>
       )}
 
-      {showFilters && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6 text-gray-800">
-          <h2 className="text-lg font-semibold mb-4">Filtros</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mês
-              </label>
-              <select
-                value={mesFilter}
-                onChange={(e) => setMesFilter(parseInt(e.target.value))}
-                className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-              >
-                {months.map((month, index) => (
-                  <option key={month} value={index + 1}>
-                    {month}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ano
-              </label>
-              <select
-                value={anoFilter}
-                onChange={(e) => setAnoFilter(parseInt(e.target.value))}
-                className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-              >
-                {generateYears().map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Categoria
-              </label>
-              <select
-                value={categoriaFilter}
-                onChange={(e) => setCategoriaFilter(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Todas</option>
-                {(activeTab === "despesas"
-                  ? categoriasDespesas
-                  : categoriasReceitas
-                ).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Barra de busca e filtros */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <SearchInput
+          placeholder={`Buscar ${activeTab}...`}
+          onSearch={setSearchQuery}
+          className="flex-1"
+        />
+        <FilterPanel
+          filters={filterOptions}
+          values={filterValues}
+          onChange={handleFilterChange}
+          onClear={handleFilterClear}
+        />
+      </div>
 
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow mb-6 text-gray-800">
@@ -588,6 +708,36 @@ const TransacoesPage: React.FC = () => {
                   ))}
                 </select>
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Data de Vencimento (opcional)
+                </label>
+                <input
+                  type="date"
+                  value={dataVencimento}
+                  onChange={(e) => setDataVencimento(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
               {activeTab === "despesas" && (
                 <>
@@ -644,6 +794,19 @@ const TransacoesPage: React.FC = () => {
                   )}
                 </>
               )}
+              
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Observações (opcional)
+                </label>
+                <textarea
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  rows={3}
+                  placeholder="Adicione observações sobre esta transação..."
+                />
+              </div>
             </div>
 
             <div className="flex justify-end gap-2">
@@ -676,97 +839,161 @@ const TransacoesPage: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden text-gray-800">
-        <div className="flex border-b">
-          <button
-            onClick={() => setActiveTab("despesas")}
-            className={`flex-1 px-4 py-3 text-center font-medium ${
-              activeTab === "despesas"
-                ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Despesas
-          </button>
+      {dataLoading ? (
+        <TableSkeleton rows={8} />
+      ) : (
+        <div className="bg-white rounded-lg shadow overflow-hidden text-gray-800">
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveTab("despesas")}
+              className={`flex-1 px-4 py-3 text-center font-medium ${
+                activeTab === "despesas"
+                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              Despesas ({despesas.length})
+            </button>
 
-          <button
-            onClick={() => setActiveTab("receitas")}
-            className={`flex-1 px-4 py-3 text-center font-medium ${
-              activeTab === "receitas"
-                ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Receitas
-          </button>
-        </div>
+            <button
+              onClick={() => setActiveTab("receitas")}
+              className={`flex-1 px-4 py-3 text-center font-medium ${
+                activeTab === "receitas"
+                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              Receitas ({receitas.length})
+            </button>
+          </div>
 
-        <div className="divide-y">
-          {(activeTab === "despesas" ? despesas : receitas).map((item) => (
-            <div key={item.id} className="p-4 hover:bg-gray-50">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  {activeTab === "despesas" ? (
-                    <ArrowDownCircle size={20} className="text-red-500" />
-                  ) : (
-                    <ArrowUpCircle size={20} className="text-green-500" />
-                  )}
+          <div className="divide-y">
+            {filteredData.map((item) => (
+              <div key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    {activeTab === "despesas" ? (
+                      <ArrowDownCircle size={20} className="text-red-500" />
+                    ) : (
+                      <ArrowUpCircle size={20} className="text-green-500" />
+                    )}
 
-                  <div>
-                    <p className="font-medium">{item.descricao}</p>
-                    <p className="text-sm text-gray-500">
-                      {formatDate(item.data)} • {item.categoria}
-                      {activeTab === "despesas" && item.tipo === "cartao" && (
-                        <span className="ml-2 text-blue-500">
-                          {cartoes.find((c) => c.id === item.cartaoId)?.nome}
-                        </span>
+                    <div>
+                      <p className="font-medium">{item.descricao}</p>
+                      <p className="text-sm text-gray-500">
+                        {formatDate(item.data)} • {item.categoria}
+                        {item.data_vencimento && (
+                          <span className="ml-2">
+                            • Venc: {formatDate(item.data_vencimento)}
+                          </span>
+                        )}
+                        {activeTab === "despesas" && item.tipo === "cartao" && (
+                          <span className="ml-2 text-blue-500">
+                            {cartoes.find((c) => c.id === item.cartaoId)?.nome}
+                          </span>
+                        )}
+                      </p>
+                      {item.observacoes && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          {item.observacoes}
+                        </p>
                       )}
-                    </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-end">
+                      <p
+                        className={`font-medium ${
+                          activeTab === "despesas"
+                            ? "text-red-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        {activeTab === "despesas" ? "-" : "+"}
+                        {formatCurrency(item.valor)}
+                      </p>
+                      
+                      <div className="flex items-center gap-2 mt-1">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            getStatusColor(item.status) === 'green'
+                              ? 'bg-green-100 text-green-700'
+                              : getStatusColor(item.status) === 'yellow'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : getStatusColor(item.status) === 'red'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {getStatusLabel(item.status)}
+                        </span>
+                        
+                        {item.status === 'pendente' && (
+                          <select
+                            value={item.status}
+                            onChange={(e) => handleStatusChange(item, e.target.value)}
+                            className="text-xs border rounded px-1 py-0.5"
+                          >
+                            <option value="pendente">Pendente</option>
+                            <option value="paga">
+                              {activeTab === 'despesas' ? 'Pagar' : 'Receber'}
+                            </option>
+                            <option value="cancelada">Cancelar</option>
+                          </select>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Botão Editar */}
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="p-2 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors"
+                      title="Editar"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      onClick={() => setConfirmDialog({
+                        isOpen: true,
+                        item,
+                        type: activeTab === "despesas" ? "despesa" : "receita"
+                      })}
+                      className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors"
+                      title="Excluir"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4">
-                  <p
-                    className={`font-medium ${
-                      activeTab === "despesas"
-                        ? "text-red-500"
-                        : "text-green-500"
-                    }`}
-                  >
-                    {activeTab === "despesas" ? "-" : "+"}
-                    {formatCurrency(item.valor)}
-                  </p>
-                  {/* Botão Editar */}
-                  <button
-                    onClick={() => handleEdit(item)}
-                    className="p-2 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors"
-                  >
-                    <Edit size={20} />
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleDelete(
-                        item.id,
-                        activeTab === "despesas" ? "despesa" : "receita"
-                      )
-                    }
-                    className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {(activeTab === "despesas" ? despesas : receitas).length === 0 && (
-            <div className="p-8 text-center text-gray-500">
-              <DollarSign size={48} className="mx-auto mb-2 opacity-50" />
-              <p>Nenhum registro encontrado</p>
-            </div>
-          )}
+            {filteredData.length === 0 && !dataLoading && (
+              <div className="p-8 text-center text-gray-500">
+                <DollarSign size={48} className="mx-auto mb-2 opacity-50" />
+                <p>
+                  {searchQuery 
+                    ? 'Nenhum registro encontrado para sua busca' 
+                    : 'Nenhum registro encontrado'
+                  }
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Dialog de confirmação */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, item: null, type: 'despesa' })}
+        onConfirm={handleDeleteConfirm}
+        title={`Excluir ${confirmDialog.type}`}
+        message={`Tem certeza que deseja excluir esta ${confirmDialog.type}? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        type="danger"
+      />
     </div>
   );
 };

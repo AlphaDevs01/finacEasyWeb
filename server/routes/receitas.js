@@ -61,7 +61,7 @@ router.get('/:id', async (req, res) => {
 
 // Criar nova receita
 router.post('/', async (req, res) => {
-  const { descricao, valor, data, categoria } = req.body;
+  const { descricao, valor, data, categoria, status, data_vencimento, observacoes } = req.body;
   const userId = req.user.id;
   
   try {
@@ -76,8 +76,8 @@ router.post('/', async (req, res) => {
     }
     
     const result = await db.query(
-      'INSERT INTO receitas (userId, descricao, valor, data, categoria) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [userId, descricao, valor, data, categoria]
+      'INSERT INTO receitas (userId, descricao, valor, data, categoria, status, data_vencimento, observacoes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [userId, descricao, valor, data, categoria, status || 'pendente', data_vencimento || null, observacoes || null]
     );
     
     res.status(201).json(result.rows[0]);
@@ -89,7 +89,7 @@ router.post('/', async (req, res) => {
 
 // Atualizar receita
 router.put('/:id', async (req, res) => {
-  const { descricao, valor, data, categoria } = req.body;
+  const { descricao, valor, data, categoria, status, data_vencimento, observacoes } = req.body;
   const userId = req.user.id;
   const receitaId = req.params.id;
   
@@ -106,14 +106,44 @@ router.put('/:id', async (req, res) => {
     
     // Atualizar receita
     const result = await db.query(
-      'UPDATE receitas SET descricao = $1, valor = $2, data = $3, categoria = $4 WHERE id = $5 AND userId = $6 RETURNING *',
-      [descricao, valor, data, categoria, receitaId, userId]
+      'UPDATE receitas SET descricao = $1, valor = $2, data = $3, categoria = $4, status = $5, data_vencimento = $6, observacoes = $7 WHERE id = $8 AND userId = $9 RETURNING *',
+      [descricao, valor, data, categoria, status || 'pendente', data_vencimento || null, observacoes || null, receitaId, userId]
     );
     
     res.json(result.rows[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao atualizar receita' });
+  }
+});
+
+// Atualizar status da receita
+router.patch('/:id/status', async (req, res) => {
+  const { status } = req.body;
+  const userId = req.user.id;
+  const receitaId = req.params.id;
+  
+  try {
+    // Verificar se a receita pertence ao usuário
+    const receitaCheck = await db.query(
+      'SELECT * FROM receitas WHERE id = $1 AND userId = $2',
+      [receitaId, userId]
+    );
+    
+    if (receitaCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Receita não encontrada' });
+    }
+    
+    // Atualizar status
+    const result = await db.query(
+      'UPDATE receitas SET status = $1 WHERE id = $2 AND userId = $3 RETURNING *',
+      [status, receitaId, userId]
+    );
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao atualizar status da receita' });
   }
 });
 

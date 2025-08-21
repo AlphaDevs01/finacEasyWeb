@@ -53,9 +53,16 @@ interface Despesa extends Transacao {
   tipo: string;
   cartaoId?: number;
   faturaId?: number;
+  status: string;
+  data_vencimento?: string;
+  observacoes?: string;
 }
 
-interface Receita extends Transacao {}
+interface Receita extends Transacao {
+  status: string;
+  data_vencimento?: string;
+  observacoes?: string;
+}
 
 interface Investimento {
   id: number;
@@ -100,6 +107,7 @@ interface FinanceContextData {
   excluirInvestimento: (id: number) => Promise<void>;
   salvarConfiguracoes: (configuracoes: Partial<Configuracao>) => Promise<void>;
   importarCSV: (tipo: 'despesas' | 'receitas', data: any[]) => Promise<any>;
+  atualizarStatusTransacao: (tipo: 'despesa' | 'receita', id: number, status: string) => Promise<void>;
 }
 
 const FinanceContext = createContext<FinanceContextData>({} as FinanceContextData);
@@ -405,6 +413,24 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const atualizarStatusTransacao = async (tipo: 'despesa' | 'receita', id: number, status: string): Promise<void> => {
+    try {
+      const endpoint = tipo === 'despesa' ? 'despesas' : 'receitas';
+      await api.patch(`/${endpoint}/${id}/status`, { status });
+      
+      if (tipo === 'despesa') {
+        loadDespesas();
+      } else {
+        loadReceitas();
+      }
+      
+      loadDashboard();
+    } catch (error) {
+      console.error(`Erro ao atualizar status da ${tipo}:`, error);
+      throw error;
+    }
+  };
+
   return (
     <FinanceContext.Provider
       value={{
@@ -435,7 +461,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         salvarInvestimento,
         excluirInvestimento,
         salvarConfiguracoes,
-        importarCSV
+        importarCSV,
+        atualizarStatusTransacao
       }}
     >
       {children}

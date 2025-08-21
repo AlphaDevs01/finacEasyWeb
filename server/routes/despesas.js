@@ -61,7 +61,7 @@ router.get('/:id', async (req, res) => {
 
 // Criar nova despesa
 router.post('/', async (req, res) => {
-  const { descricao, valor, data, tipo, cartaoId, faturaId, categoria } = req.body;
+  const { descricao, valor, data, tipo, cartaoId, faturaId, categoria, status, data_vencimento, observacoes } = req.body;
   const userId = req.user.id;
   
   try {
@@ -104,8 +104,8 @@ router.post('/', async (req, res) => {
     }
     
     const result = await db.query(
-      'INSERT INTO despesas (userId, descricao, valor, data, tipo, cartaoId, faturaId, categoria) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [userId, descricao, valor, data, tipo, cartaoId || null, faturaId || null, categoria]
+      'INSERT INTO despesas (userId, descricao, valor, data, tipo, cartaoId, faturaId, categoria, status, data_vencimento, observacoes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
+      [userId, descricao, valor, data, tipo, cartaoId || null, faturaId || null, categoria, status || 'pendente', data_vencimento || null, observacoes || null]
     );
     
     res.status(201).json(result.rows[0]);
@@ -117,7 +117,7 @@ router.post('/', async (req, res) => {
 
 // Atualizar despesa
 router.put('/:id', async (req, res) => {
-  const { descricao, valor, data, tipo, cartaoId, faturaId, categoria } = req.body;
+  const { descricao, valor, data, tipo, cartaoId, faturaId, categoria, status, data_vencimento, observacoes } = req.body;
   const userId = req.user.id;
   const despesaId = req.params.id;
   
@@ -157,14 +157,44 @@ router.put('/:id', async (req, res) => {
     
     // Atualizar despesa
     const result = await db.query(
-      'UPDATE despesas SET descricao = $1, valor = $2, data = $3, tipo = $4, cartaoId = $5, faturaId = $6, categoria = $7 WHERE id = $8 AND userId = $9 RETURNING *',
-      [descricao, valor, data, tipo, cartaoId || null, faturaId || null, categoria, despesaId, userId]
+      'UPDATE despesas SET descricao = $1, valor = $2, data = $3, tipo = $4, cartaoId = $5, faturaId = $6, categoria = $7, status = $8, data_vencimento = $9, observacoes = $10 WHERE id = $11 AND userId = $12 RETURNING *',
+      [descricao, valor, data, tipo, cartaoId || null, faturaId || null, categoria, status || 'pendente', data_vencimento || null, observacoes || null, despesaId, userId]
     );
     
     res.json(result.rows[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao atualizar despesa' });
+  }
+});
+
+// Atualizar status da despesa
+router.patch('/:id/status', async (req, res) => {
+  const { status } = req.body;
+  const userId = req.user.id;
+  const despesaId = req.params.id;
+  
+  try {
+    // Verificar se a despesa pertence ao usuário
+    const despesaCheck = await db.query(
+      'SELECT * FROM despesas WHERE id = $1 AND userId = $2',
+      [despesaId, userId]
+    );
+    
+    if (despesaCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Despesa não encontrada' });
+    }
+    
+    // Atualizar status
+    const result = await db.query(
+      'UPDATE despesas SET status = $1 WHERE id = $2 AND userId = $3 RETURNING *',
+      [status, despesaId, userId]
+    );
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao atualizar status da despesa' });
   }
 });
 

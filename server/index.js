@@ -13,6 +13,8 @@ import investimentoRoutes from './routes/investimentos.js';
 import configuracaoRoutes from './routes/configuracoes.js';
 import dashboardRoutes from './routes/dashboard.js';
 import importRoutes from './routes/import.js';
+import metasRoutes from './routes/metas.js';
+import notificacoesRoutes from './routes/notificacoes.js';
 import { authenticateToken } from './middleware/auth.js';
 
 dotenv.config();
@@ -44,6 +46,8 @@ app.use('/api/receitas', authenticateToken, receitaRoutes);
 app.use('/api/investimentos', authenticateToken, investimentoRoutes);
 app.use('/api/configuracoes', authenticateToken, configuracaoRoutes);
 app.use('/api/import', authenticateToken, importRoutes);
+app.use('/api/metas', authenticateToken, metasRoutes);
+app.use('/api/notificacoes', authenticateToken, notificacoesRoutes);
 
 // Teste
 app.get('/api/test', (req, res) => {
