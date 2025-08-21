@@ -66,7 +66,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
     <div className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
       >
         <Download size={20} />
         Exportar
@@ -82,14 +82,14 @@ const ExportButton: React.FC<ExportButtonProps> = ({
             <div className="py-2">
               <button
                 onClick={exportToCSV}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 flex items-center gap-2 transition-colors duration-200"
               >
                 <FileSpreadsheet size={16} />
                 Exportar como CSV
               </button>
               <button
                 onClick={exportToJSON}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 flex items-center gap-2 transition-colors duration-200"
               >
                 <FileText size={16} />
                 Exportar como JSON

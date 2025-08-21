@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { api } from '../services/api';
 import { useAuth } from './AuthContext';
+import { useToast } from '../components/ui/Toast';
+import { CreditCard, DollarSign, CheckCircle } from 'lucide-react';
 
 interface DashboardData {
   mes: number;
@@ -114,6 +116,7 @@ const FinanceContext = createContext<FinanceContextData>({} as FinanceContextDat
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [historico, setHistorico] = useState<HistoricoData | null>(null);
@@ -258,8 +261,20 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       if (cartao.id) {
         await api.put(`/cartoes/${cartao.id}`, cartao);
+        showToast({
+          type: 'success',
+          title: 'Cartão atualizado!',
+          message: 'As informações do cartão foram atualizadas com sucesso',
+          icon: <CreditCard className="h-5 w-5 text-primary-500" />
+        });
       } else {
         await api.post('/cartoes', cartao);
+        showToast({
+          type: 'success',
+          title: 'Cartão adicionado!',
+          message: `Cartão ${cartao.nome} foi adicionado com sucesso`,
+          icon: <CreditCard className="h-5 w-5 text-primary-500" />
+        });
       }
       
       loadCartoes();
@@ -272,6 +287,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const excluirCartao = async (id: number): Promise<void> => {
     try {
       await api.delete(`/cartoes/${id}`);
+      showToast({
+        type: 'success',
+        title: 'Cartão removido!',
+        message: 'O cartão foi removido com sucesso',
+        icon: <CreditCard className="h-5 w-5 text-primary-500" />
+      });
       loadCartoes();
     } catch (error) {
       console.error('Erro ao excluir cartão:', error);
@@ -298,6 +319,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const atualizarStatusFatura = async (id: number, status: string): Promise<void> => {
     try {
       await api.put(`/faturas/${id}`, { status });
+      if (status === 'paga') {
+        showToast({
+          type: 'success',
+          title: 'Fatura paga!',
+          message: 'A fatura foi marcada como paga com sucesso',
+          icon: <CheckCircle className="h-5 w-5 text-primary-500" />,
+          duration: 4000
+        });
+      }
       loadFaturas();
       loadDashboard();
     } catch (error) {
@@ -310,8 +340,20 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       if (despesa.id) {
         await api.put(`/despesas/${despesa.id}`, despesa);
+        showToast({
+          type: 'success',
+          title: 'Despesa atualizada!',
+          message: 'A despesa foi atualizada com sucesso',
+          icon: <DollarSign className="h-5 w-5 text-accent-500" />
+        });
       } else {
         await api.post('/despesas', despesa);
+        showToast({
+          type: 'success',
+          title: 'Despesa adicionada!',
+          message: `Despesa de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(despesa.valor || 0)} foi registrada`,
+          icon: <DollarSign className="h-5 w-5 text-accent-500" />
+        });
       }
       
       loadDespesas();
@@ -337,8 +379,20 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       if (receita.id) {
         await api.put(`/receitas/${receita.id}`, receita);
+        showToast({
+          type: 'success',
+          title: 'Receita atualizada!',
+          message: 'A receita foi atualizada com sucesso',
+          icon: <DollarSign className="h-5 w-5 text-primary-500" />
+        });
       } else {
         await api.post('/receitas', receita);
+        showToast({
+          type: 'success',
+          title: 'Receita adicionada!',
+          message: `Receita de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(receita.valor || 0)} foi registrada`,
+          icon: <DollarSign className="h-5 w-5 text-primary-500" />
+        });
       }
       
       loadReceitas();

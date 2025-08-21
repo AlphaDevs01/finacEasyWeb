@@ -368,7 +368,7 @@ const DetalhesCartao: React.FC = () => {
                   </div>
                   <div>
                     <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
+                      className={`flex items-center gap-1 px-3 py-1 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                         fatura.status === "paga"
                           ? "bg-green-100 text-green-700"
                           : fatura.status === "vencida"
@@ -489,12 +489,13 @@ const DetalhesCartao: React.FC = () => {
                   className="w-full border rounded px-3 py-2"
                   placeholder="0,00"
                   required
+                  className="w-full border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loadingFatura === pagamentoModal.fatura.id}
-                className={`w-full py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors ${
+                className={`w-full py-3 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   loadingFatura === pagamentoModal.fatura.id
                     ? "opacity-60 cursor-not-allowed"
                     : ""

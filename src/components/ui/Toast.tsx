@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Info, X, CreditCard, DollarSign } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -9,6 +9,7 @@ interface Toast {
   title: string;
   message?: string;
   duration?: number;
+  icon?: React.ReactNode;
 }
 
 interface ToastContextData {
@@ -28,10 +29,10 @@ export const useToast = () => {
 
 const ToastIcon: React.FC<{ type: ToastType }> = ({ type }) => {
   const icons = {
-    success: <CheckCircle className="h-5 w-5 text-green-500" />,
-    error: <XCircle className="h-5 w-5 text-red-500" />,
+    success: <CheckCircle className="h-5 w-5 text-primary-500" />,
+    error: <XCircle className="h-5 w-5 text-accent-500" />,
     warning: <AlertCircle className="h-5 w-5 text-yellow-500" />,
-    info: <Info className="h-5 w-5 text-blue-500" />
+    info: <Info className="h-5 w-5 text-secondary-500" />
   };
   
   return icons[type];
@@ -42,10 +43,10 @@ const ToastItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({
   onClose 
 }) => {
   const bgColors = {
-    success: 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700',
+    success: 'bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-700',
     error: 'bg-accent-50 border-accent-200 dark:bg-accent-900/20 dark:border-accent-700',
     warning: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-700',
-    info: 'bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-700'
+    info: 'bg-secondary-50 border-secondary-200 dark:bg-secondary-900/20 dark:border-secondary-700'
   };
 
   React.useEffect(() => {
@@ -57,11 +58,11 @@ const ToastItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({
   }, [toast.id, toast.duration, onClose]);
 
   return (
-    <div className={`max-w-sm w-full ${bgColors[toast.type]} border rounded-2xl shadow-medium pointer-events-auto ring-1 ring-black/5 dark:ring-white/5 overflow-hidden transform transition-all duration-300 ease-in-out animate-slide-down`}>
+    <div className={`max-w-sm w-full ${bgColors[toast.type]} border rounded-2xl shadow-strong pointer-events-auto ring-1 ring-black/5 dark:ring-white/5 overflow-hidden transform transition-all duration-500 ease-in-out animate-slide-down backdrop-blur-sm`}>
       <div className="p-4">
         <div className="flex items-start">
           <div className="flex-shrink-0">
-            <ToastIcon type={toast.type} />
+            {toast.icon || <ToastIcon type={toast.type} />}
           </div>
           <div className="ml-3 w-0 flex-1 pt-0.5">
             <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{toast.title}</p>
@@ -71,7 +72,7 @@ const ToastItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({
           </div>
           <div className="ml-4 flex-shrink-0 flex">
             <button
-              className="bg-white dark:bg-neutral-700 rounded-xl inline-flex text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+              className="bg-white/80 dark:bg-neutral-700/80 backdrop-blur-sm rounded-xl inline-flex text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 hover:scale-110"
               onClick={() => onClose(toast.id)}
             >
               <X className="h-5 w-5" />
@@ -100,7 +101,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
       
       {/* Toast Container */}
-      <div className="fixed top-0 right-0 z-50 p-6 space-y-4">
+      <div className="fixed top-4 right-4 z-50 p-2 space-y-3 max-w-md">
         {toasts.map(toast => (
           <ToastItem
             key={toast.id}

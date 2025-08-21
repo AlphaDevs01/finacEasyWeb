@@ -166,7 +166,7 @@ const Metas: React.FC = () => {
         <h1 className="text-2xl font-bold">Metas de Gastos</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         >
           <Plus size={20} />
           Nova Meta
@@ -180,7 +180,7 @@ const Metas: React.FC = () => {
           <select
             value={mes}
             onChange={(e) => setMes(Number(e.target.value))}
-            className="border rounded px-3 py-2"
+            className="border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           >
             {meses.map((m, idx) => (
               <option key={m} value={idx + 1}>{m}</option>
@@ -192,7 +192,7 @@ const Metas: React.FC = () => {
           <select
             value={ano}
             onChange={(e) => setAno(Number(e.target.value))}
-            className="border rounded px-3 py-2"
+            className="border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           >
             {[ano - 1, ano, ano + 1].map(a => (
               <option key={a} value={a}>{a}</option>
@@ -203,31 +203,31 @@ const Metas: React.FC = () => {
 
       {/* Resumo Geral */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
           <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <Target className="text-blue-600" size={20} />
+            <Target className="text-primary-600" size={20} />
             Total das Metas
           </h3>
-          <p className="text-2xl font-bold text-blue-600">
+          <p className="text-2xl font-bold text-primary-600">
             {formatCurrency(totalLimite)}
           </p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
           <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <TrendingUp className="text-red-600" size={20} />
+            <TrendingUp className="text-accent-600" size={20} />
             Total Gasto
           </h3>
-          <p className="text-2xl font-bold text-red-600">
+          <p className="text-2xl font-bold text-accent-600">
             {formatCurrency(totalGasto)}
           </p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
           <h3 className="text-lg font-semibold mb-2">Percentual Geral</h3>
           <p className={`text-2xl font-bold ${
-            percentualGeral >= 100 ? 'text-red-600' : 
-            percentualGeral >= 80 ? 'text-yellow-600' : 'text-green-600'
+            percentualGeral >= 100 ? 'text-accent-600' : 
+            percentualGeral >= 80 ? 'text-yellow-600' : 'text-primary-600'
           }`}>
             {percentualGeral.toFixed(1)}%
           </p>
@@ -262,7 +262,7 @@ const Metas: React.FC = () => {
                 <select
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   required
                   disabled={editId !== null}
                 >
@@ -281,7 +281,7 @@ const Metas: React.FC = () => {
                   type="number"
                   value={valorLimite}
                   onChange={(e) => setValorLimite(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   min="0"
                   step="0.01"
                   required
@@ -296,7 +296,7 @@ const Metas: React.FC = () => {
                   setShowForm(false);
                   resetForm();
                 }}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 text-neutral-700 bg-neutral-100 rounded-xl hover:bg-neutral-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2"
               >
                 Cancelar
               </button>
@@ -304,7 +304,7 @@ const Metas: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${
+                className={`px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   loading ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >
@@ -321,24 +321,24 @@ const Metas: React.FC = () => {
           const percentual = meta.valor_limite > 0 ? (meta.valor_gasto / meta.valor_limite) * 100 : 0;
           
           return (
-            <div key={meta.id} className="bg-white rounded-lg shadow p-6">
+            <div key={meta.id} className="bg-white rounded-2xl shadow-medium border border-neutral-200/50 p-6 hover:shadow-strong transition-all duration-300 transform hover:scale-[1.01]">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-semibold">{meta.categoria}</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-neutral-500">
                     {formatCurrency(meta.valor_gasto)} de {formatCurrency(meta.valor_limite)}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(meta)}
-                    className="p-2 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors"
+                    className="p-2 text-neutral-400 hover:text-primary-500 rounded-full hover:bg-primary-50 transition-all duration-200 transform hover:scale-110"
                   >
                     <Edit size={16} />
                   </button>
                   <button
                     onClick={() => handleDelete(meta.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors"
+                    className="p-2 text-neutral-400 hover:text-accent-500 rounded-full hover:bg-accent-50 transition-all duration-200 transform hover:scale-110"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -353,11 +353,11 @@ const Metas: React.FC = () => {
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-neutral-600">
                   {percentual.toFixed(1)}% utilizado
                 </span>
                 {percentual >= 90 && (
-                  <span className="text-sm text-red-600 font-medium flex items-center gap-1">
+                  <span className="text-sm text-accent-600 font-medium flex items-center gap-1 animate-pulse">
                     <AlertCircle size={16} />
                     {percentual >= 100 ? 'Meta excedida!' : 'Meta quase atingida!'}
                   </span>
@@ -368,14 +368,14 @@ const Metas: React.FC = () => {
         })}
         
         {metas.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-neutral-500">
             <Target size={48} className="mx-auto mb-2 opacity-50" />
             <p>Nenhuma meta definida para este período</p>
             <button
               onClick={() => setShowForm(true)}
-              className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+              className="mt-4 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             >
-              Criar primeira meta
+              Criar Primeira Meta
             </button>
           </div>
         )}

@@ -84,7 +84,7 @@ const Cartoes: React.FC = () => {
         
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         >
           <Plus size={20} />
           Novo Cartão
@@ -114,7 +114,7 @@ const Cartoes: React.FC = () => {
                   type="text"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   placeholder="Ex: Nubank"
                   required
                 />
@@ -128,7 +128,7 @@ const Cartoes: React.FC = () => {
                   type="text"
                   value={numero}
                   onChange={(e) => setNumero(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   placeholder="0000"
                   maxLength={4}
                   required
@@ -143,7 +143,7 @@ const Cartoes: React.FC = () => {
                   type="number"
                   value={limite}
                   onChange={(e) => setLimite(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   placeholder="0,00"
                   min="0"
                   step="0.01"
@@ -159,7 +159,7 @@ const Cartoes: React.FC = () => {
                   type="number"
                   value={dataFechamento}
                   onChange={(e) => setDataFechamento(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   placeholder="1-31"
                   min="1"
                   max="31"
@@ -175,7 +175,7 @@ const Cartoes: React.FC = () => {
                   type="number"
                   value={dataVencimento}
                   onChange={(e) => setDataVencimento(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   placeholder="1-31"
                   min="1"
                   max="31"
@@ -191,7 +191,7 @@ const Cartoes: React.FC = () => {
                   setShowForm(false);
                   resetForm();
                 }}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 text-neutral-700 bg-neutral-100 rounded-xl hover:bg-neutral-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2"
               >
                 Cancelar
               </button>
@@ -199,7 +199,7 @@ const Cartoes: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${
+                className={`px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   loading ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >
@@ -214,19 +214,19 @@ const Cartoes: React.FC = () => {
         {cartoes.map(cartao => (
           <div
             key={cartao.id}
-            className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50"
+            className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 hover:shadow-strong transition-all duration-300 transform hover:scale-[1.02] group relative"
           >
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200">
               <button
                 onClick={() => handleDelete(cartao.id)}
-                className="p-1 hover:bg-red-500 rounded transition-colors"
+                className="p-2 text-neutral-400 hover:text-accent-500 rounded-full hover:bg-accent-50 transition-all duration-200 transform hover:scale-110"
               >
                 <Trash2 size={16} />
               </button>
             </div>
             
             <div 
-              className="cursor-pointer"
+              className="cursor-pointer transition-all duration-200"
               onClick={() => navigate(`/cartoes/${cartao.id}`)}
             >
               <div className="flex justify-between items-center mb-2">
@@ -260,9 +260,15 @@ const Cartoes: React.FC = () => {
       </div>
       
       {cartoes.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-12 text-neutral-500">
           <CreditCard size={48} className="mx-auto mb-2 opacity-50" />
           <p>Você ainda não tem cartões cadastrados</p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-4 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          >
+            Adicionar Primeiro Cartão
+          </button>
         </div>
       )}
     </div>

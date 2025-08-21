@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useFinance } from "../contexts/FinanceContext";
 import { useToast } from "../components/ui/Toast";
 import SearchInput from "../components/ui/SearchInput";
-import FilterPanel from "../components/ui/FilterPanel";
+import AdvancedFilters from "../components/ui/AdvancedFilters";
 import ExportButton from "../components/ui/ExportButton";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { TableSkeleton } from "../components/ui/SkeletonLoader";
+import { ErrorHandler, withRetry } from "../utils/errorHandler";
+import { Validator, commonSchemas } from "../utils/validation";
 import {
   Plus,
   Filter,
@@ -14,7 +16,8 @@ import {
   ArrowDownCircle,
   Trash2,
   AlertCircle,
-  Edit, // ADICIONADO
+  Edit,
+  Settings
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -43,6 +46,8 @@ const TransacoesPage: React.FC = () => {
     item: any;
     type: 'despesa' | 'receita';
   }>({ isOpen: false, item: null, type: 'despesa' });
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<any>({});
 
   // Form states
   const [descricao, setDescricao] = useState("");
@@ -59,11 +64,11 @@ const TransacoesPage: React.FC = () => {
   // Filter states
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
-  const [categoriaFilter, setCategoriaFilter] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [categorias, setCategorias] = useState<any[]>([]);
   // Novo estado para edição
   const [editId, setEditId] = useState<number | null>(null);
 
@@ -72,6 +77,7 @@ const TransacoesPage: React.FC = () => {
       try {
         setDataLoading(true);
         await loadCartoes();
+        await loadCategorias();
         await loadData();
       } catch (error) {
         showToast({
@@ -85,14 +91,27 @@ const TransacoesPage: React.FC = () => {
     };
     
     initData();
-  }, [mesFilter, anoFilter, categoriaFilter]);
+  }, [mesFilter, anoFilter, advancedFilters]);
+
+  const loadCategorias = async () => {
+    try {
+      const response = await withRetry(() => api.get('/categorias'));
+      setCategorias(response.data);
+    } catch (error) {
+      const appError = ErrorHandler.handle(error);
+      showToast({
+        type: 'error',
+        title: 'Erro ao carregar categorias',
+        message: appError.message
+      });
+    }
+  };
 
   const loadData = () => {
-    const filters = {
+    const filters = Object.assign({
       mes: mesFilter,
       ano: anoFilter,
-      categoria: categoriaFilter || undefined,
-    };
+    }, advancedFilters);
 
     loadDespesas(filters);
     loadReceitas(filters);
@@ -101,6 +120,23 @@ const TransacoesPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validação usando o sistema de validação
+    const validationSchema = {
+      descricao: { required: true, minLength: 2, maxLength: 255 },
+      valor: { required: true, ...commonSchemas.currency },
+      data: { required: true, ...commonSchemas.date },
+      categoria: { required: true }
+    };
+
+    const formData = { descricao, valor: parseFloat(valor), data, categoria };
+    const validation = Validator.validate(formData, validationSchema);
+
+    if (!validation.isValid) {
+      const firstError = Object.values(validation.errors)[0];
+      setError(firstError);
+      return;
+    }
 
     if (!descricao || !valor || !data || !categoria) {
       setError("Preencha todos os campos obrigatórios");
@@ -259,15 +295,13 @@ const TransacoesPage: React.FC = () => {
         title: 'Sucesso!',
         message: `${activeTab === 'despesas' ? 'Despesa' : 'Receita'} salva com sucesso`
       });
-    } catch (error: any) {
-      setError(
-        error.response?.data?.error ||
-          `Erro ao salvar ${activeTab === "despesas" ? "despesa" : "receita"}`
-      );
+    } catch (error) {
+      const appError = ErrorHandler.handle(error);
+      setError(appError.message);
       showToast({
         type: 'error',
         title: 'Erro ao salvar',
-        message: error.response?.data?.error || 'Ocorreu um erro inesperado'
+        message: appError.message
       });
     } finally {
       setLoading(false);
@@ -520,36 +554,26 @@ const TransacoesPage: React.FC = () => {
   };
 
   // Filtrar dados baseado na busca
-  const filteredData = (activeTab === "despesas" ? despesas : receitas).filter(item =>
-    item.descricao.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.categoria.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredData = (activeTab === "despesas" ? despesas : receitas).filter(item => {
+    const matchesSearch = item.descricao.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.categoria.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Aplicar filtros avançados
+    if (advancedFilters.valorMin && item.valor < parseFloat(advancedFilters.valorMin)) return false;
+    if (advancedFilters.valorMax && item.valor > parseFloat(advancedFilters.valorMax)) return false;
+    if (advancedFilters.dataInicio && item.data < advancedFilters.dataInicio) return false;
+    if (advancedFilters.dataFim && item.data > advancedFilters.dataFim) return false;
+    if (advancedFilters.categoria && item.categoria !== advancedFilters.categoria) return false;
+    if (advancedFilters.status && item.status !== advancedFilters.status) return false;
+    if (advancedFilters.tipo && item.tipo !== advancedFilters.tipo) return false;
+    if (advancedFilters.cartaoId && item.cartaoId !== parseInt(advancedFilters.cartaoId)) return false;
+    if (advancedFilters.descricao && !item.descricao.toLowerCase().includes(advancedFilters.descricao.toLowerCase())) return false;
 
-  // Configuração dos filtros
-  const filterOptions = [
-    {
-      key: 'categoria',
-      label: 'Categoria',
-      type: 'select' as const,
-      options: (activeTab === 'despesas' ? categoriasDespesas : categoriasReceitas).map(cat => ({
-        value: cat,
-        label: cat
-      }))
-    }
-  ];
+    return matchesSearch;
+  });
 
-  const filterValues = {
-    categoria: categoriaFilter
-  };
-
-  const handleFilterChange = (key: string, value: any) => {
-    if (key === 'categoria') {
-      setCategoriaFilter(value);
-    }
-  };
-
-  const handleFilterClear = () => {
-    setCategoriaFilter('');
+  const handleAdvancedFiltersApply = (filters: any) => {
+    setAdvancedFilters(filters);
   };
 
   return (
@@ -564,8 +588,25 @@ const TransacoesPage: React.FC = () => {
           />
 
           <button
+            onClick={() => setShowAdvancedFilters(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 ${
+              Object.keys(advancedFilters).length > 0
+                ? 'bg-primary-50 border border-primary-200 text-primary-700 shadow-medium'
+                : 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50 shadow-soft'
+            }`}
+          >
+            <Settings size={20} />
+            Filtros Avançados
+            {Object.keys(advancedFilters).length > 0 && (
+              <span className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                {Object.keys(advancedFilters).length}
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             <Plus size={20} />
             Nova {activeTab === "despesas" ? "Despesa" : "Receita"}
@@ -629,12 +670,6 @@ const TransacoesPage: React.FC = () => {
           onSearch={setSearchQuery}
           className="flex-1"
         />
-        <FilterPanel
-          filters={filterOptions}
-          values={filterValues}
-          onChange={handleFilterChange}
-          onClear={handleFilterClear}
-        />
       </div>
 
       {showForm && (
@@ -694,16 +729,15 @@ const TransacoesPage: React.FC = () => {
                 <select
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   required
                 >
                   <option value="">Selecione...</option>
-                  {(activeTab === "despesas"
-                    ? categoriasDespesas
-                    : categoriasReceitas
-                  ).map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                  {categorias
+                    .filter(cat => cat.tipo === (activeTab === 'despesas' ? 'despesa' : 'receita'))
+                    .map((cat) => (
+                    <option key={cat.id} value={cat.nome}>
+                      {cat.icone} {cat.nome}
                     </option>
                   ))}
                 </select>
@@ -716,7 +750,7 @@ const TransacoesPage: React.FC = () => {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   required
                 >
                   {statusOptions.map((option) => (
@@ -735,7 +769,7 @@ const TransacoesPage: React.FC = () => {
                   type="date"
                   value={dataVencimento}
                   onChange={(e) => setDataVencimento(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 />
               </div>
 
@@ -748,7 +782,7 @@ const TransacoesPage: React.FC = () => {
                     <select
                       value={tipo}
                       onChange={(e) => setTipo(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                       required
                     >
                       <option value="conta">Conta</option>
@@ -765,7 +799,7 @@ const TransacoesPage: React.FC = () => {
                         <select
                           value={cartaoId}
                           onChange={(e) => setCartaoId(e.target.value)}
-                          className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                           required
                         >
                           <option value="">Selecione...</option>
@@ -786,7 +820,7 @@ const TransacoesPage: React.FC = () => {
                           max={36}
                           value={parcelas}
                           onChange={(e) => setParcelas(Number(e.target.value))}
-                          className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                           required
                         />
                       </div>
@@ -802,7 +836,7 @@ const TransacoesPage: React.FC = () => {
                 <textarea
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   rows={3}
                   placeholder="Adicione observações sobre esta transação..."
                 />
@@ -817,14 +851,14 @@ const TransacoesPage: React.FC = () => {
                   setEditId(null);
                   resetForm();
                 }}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 text-neutral-700 bg-neutral-100 rounded-xl hover:bg-neutral-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${
+                className={`px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   loading ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
@@ -848,8 +882,8 @@ const TransacoesPage: React.FC = () => {
               onClick={() => setActiveTab("despesas")}
               className={`flex-1 px-4 py-3 text-center font-medium ${
                 activeTab === "despesas"
-                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  ? "bg-primary-50 text-primary-600 border-b-2 border-primary-600"
+                  : "text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50"
               }`}
             >
               Despesas ({despesas.length})
@@ -859,8 +893,8 @@ const TransacoesPage: React.FC = () => {
               onClick={() => setActiveTab("receitas")}
               className={`flex-1 px-4 py-3 text-center font-medium ${
                 activeTab === "receitas"
-                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  ? "bg-primary-50 text-primary-600 border-b-2 border-primary-600"
+                  : "text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50"
               }`}
             >
               Receitas ({receitas.length})
@@ -933,7 +967,7 @@ const TransacoesPage: React.FC = () => {
                           <select
                             value={item.status}
                             onChange={(e) => handleStatusChange(item, e.target.value)}
-                            className="text-xs border rounded px-1 py-0.5"
+                            className="text-xs border border-neutral-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                           >
                             <option value="pendente">Pendente</option>
                             <option value="paga">
@@ -948,7 +982,7 @@ const TransacoesPage: React.FC = () => {
                     {/* Botão Editar */}
                     <button
                       onClick={() => handleEdit(item)}
-                      className="p-2 text-gray-400 hover:text-blue-500 rounded-full hover:bg-blue-50 transition-colors"
+                      className="p-2 text-neutral-400 hover:text-primary-500 rounded-full hover:bg-primary-50 transition-all duration-200 transform hover:scale-110"
                       title="Editar"
                     >
                       <Edit size={16} />
@@ -959,7 +993,7 @@ const TransacoesPage: React.FC = () => {
                         item,
                         type: activeTab === "despesas" ? "despesa" : "receita"
                       })}
-                      className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors"
+                      className="p-2 text-neutral-400 hover:text-accent-500 rounded-full hover:bg-accent-50 transition-all duration-200 transform hover:scale-110"
                       title="Excluir"
                     >
                       <Trash2 size={16} />
@@ -970,7 +1004,7 @@ const TransacoesPage: React.FC = () => {
             ))}
 
             {filteredData.length === 0 && !dataLoading && (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-neutral-500">
                 <DollarSign size={48} className="mx-auto mb-2 opacity-50" />
                 <p>
                   {searchQuery 
@@ -993,6 +1027,15 @@ const TransacoesPage: React.FC = () => {
         message={`Tem certeza que deseja excluir esta ${confirmDialog.type}? Esta ação não pode ser desfeita.`}
         confirmText="Excluir"
         type="danger"
+      />
+
+      {/* Filtros Avançados */}
+      <AdvancedFilters
+        isOpen={showAdvancedFilters}
+        onClose={() => setShowAdvancedFilters(false)}
+        onApply={handleAdvancedFiltersApply}
+        cartoes={cartoes}
+        categorias={categorias}
       />
     </div>
   );

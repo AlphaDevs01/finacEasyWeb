@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { ArrowUpRight, ArrowDownRight, CreditCard, TrendingUp, DollarSign, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
+import OpenFinanceConnect from '../components/ui/OpenFinanceConnect';
 
 const Dashboard: React.FC = () => {
   const { dashboard, loadDashboard, historico, loadHistorico, cartoes, loadCartoes } = useFinance();
@@ -314,37 +315,80 @@ const Dashboard: React.FC = () => {
           {/* Gráficos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Gráfico de barras - Despesas e Receitas Diárias */}
-            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50">
+            <div className="bg-white dark:bg-neutral-700 p-4 sm:p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50">
               <h3 className="text-xl font-bold mb-6 text-neutral-800 dark:text-neutral-100">Movimento Diário</h3>
-              <div className="h-64">
+              <div className="h-64 sm:h-80 w-full overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={prepareBarChartData()} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                  <BarChart 
+                    data={prepareBarChartData()} 
+                    margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="dia" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="dia" 
+                      fontSize={12}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis 
+                      fontSize={12}
+                      tick={{ fontSize: 12 }}
+                      width={60}
+                    />
                     <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                    <Legend />
-                    <Bar dataKey="receitas" fill="#10b981" name="Receitas" />
-                    <Bar dataKey="despesas" fill="#dc2626" name="Despesas" />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Bar dataKey="receitas" fill="#147361" name="Receitas" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="despesas" fill="#ef4444" name="Despesas" radius={[2, 2, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
             
             {/* Gráfico de linha - Evolução Anual */}
-            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50">
+            <div className="bg-white dark:bg-neutral-700 p-4 sm:p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50">
               <h3 className="text-xl font-bold mb-6 text-neutral-800 dark:text-neutral-100">Evolução Anual</h3>
-              <div className="h-64">
+              <div className="h-64 sm:h-80 w-full overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={prepareLineChartData()} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                  <LineChart 
+                    data={prepareLineChartData()} 
+                    margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="name" 
+                      fontSize={12}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis 
+                      fontSize={12}
+                      tick={{ fontSize: 12 }}
+                      width={60}
+                    />
                     <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                    <Legend />
-                    <Line type="monotone" dataKey="receitas" stroke="#10b981" name="Receitas" />
-                    <Line type="monotone" dataKey="despesas" stroke="#dc2626" name="Despesas" />
-                    <Line type="monotone" dataKey="saldo" stroke="#147361" name="Saldo" />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="receitas" 
+                      stroke="#147361" 
+                      strokeWidth={3}
+                      name="Receitas"
+                      dot={{ fill: '#147361', strokeWidth: 2, r: 4 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="despesas" 
+                      stroke="#ef4444" 
+                      strokeWidth={3}
+                      name="Despesas"
+                      dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="saldo" 
+                      stroke="#285950" 
+                      strokeWidth={3}
+                      name="Saldo"
+                      dot={{ fill: '#285950', strokeWidth: 2, r: 4 }}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -353,11 +397,16 @@ const Dashboard: React.FC = () => {
           
           {/* Seção inferior - Categorias e Cartões */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Open Finance */}
+            <div className="lg:col-span-3 mb-8">
+              <OpenFinanceConnect />
+            </div>
+            
             {/* Categorias de Despesas */}
-            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 lg:col-span-1">
+            <div className="bg-white dark:bg-neutral-700 p-4 sm:p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 lg:col-span-1">
               <h3 className="text-xl font-bold mb-6 text-neutral-800 dark:text-neutral-100">Despesas por Categoria</h3>
               {(dashboard.categorias_despesas && dashboard.categorias_despesas.length > 0) ? (
-                <div className="h-64 flex items-center justify-center">
+                <div className="h-64 sm:h-80 flex items-center justify-center w-full overflow-hidden">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -370,11 +419,10 @@ const Dashboard: React.FC = () => {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        outerRadius={100}
+                        outerRadius="80%"
                         fill="#8884d8"
                         dataKey="total"
                         nameKey="categoria"
-                        // Remover label customizado para evitar sobreposição
                       >
                         {dashboard.categorias_despesas.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -383,8 +431,9 @@ const Dashboard: React.FC = () => {
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Legend
                         layout="vertical"
-                        align="left"
+                        align="right"
                         verticalAlign="middle"
+                        wrapperStyle={{ fontSize: '12px', paddingLeft: '10px' }}
                         formatter={(value: any, entry: any, index: number) => {
                           const categoria = dashboard.categorias_despesas[index]?.categoria || value;
                           const total = dashboard.categorias_despesas[index]?.total || 0;
@@ -406,7 +455,7 @@ const Dashboard: React.FC = () => {
             </div>
             
             {/* Cartões */}
-            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 lg:col-span-2">
+            <div className="bg-white dark:bg-neutral-700 p-4 sm:p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 lg:col-span-2">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100">Seus Cartões</h3>
                 <button 
@@ -448,7 +497,7 @@ const Dashboard: React.FC = () => {
                   <p className="text-neutral-600 dark:text-neutral-300 mb-4">Você ainda não tem cartões cadastrados</p>
                   <button
                     onClick={() => navigate('/cartoes')}
-                    className="px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium"
+                    className="px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-200 transform hover:scale-105 shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   >
                     Adicionar Cartão
                   </button>

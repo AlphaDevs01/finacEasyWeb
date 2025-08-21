@@ -139,6 +139,79 @@ const initDatabase = async () => {
       );
     `);
 
+    // Tabela de categorias personalizadas
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS categorias (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        nome VARCHAR(100) NOT NULL,
+        tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('receita', 'despesa')),
+        cor VARCHAR(7) DEFAULT '#3B82F6',
+        icone VARCHAR(10) DEFAULT '💰',
+        ativo BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(userId, nome, tipo)
+      );
+    `);
+
+    // Tabela de lembretes
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS lembretes (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        titulo VARCHAR(255) NOT NULL,
+        descricao TEXT,
+        data_vencimento TIMESTAMP NOT NULL,
+        tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('despesa', 'receita', 'fatura', 'meta')),
+        ativo BOOLEAN DEFAULT TRUE,
+        notificado BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tabela de configurações Open Finance
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS openfinance_settings (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+        auto_sync BOOLEAN DEFAULT FALSE,
+        sync_frequency VARCHAR(20) DEFAULT 'daily',
+        last_sync TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tabela de conexões bancárias
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS openfinance_connections (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        bank_id VARCHAR(50),
+        connection_token VARCHAR(255) NOT NULL,
+        connectorId INTEGER,
+        itemId VARCHAR(255),
+        bankName VARCHAR(255),
+        status VARCHAR(20) DEFAULT 'pending',
+        connected_at TIMESTAMP,
+        disconnected_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tabela de histórico de sincronização
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS openfinance_sync_history (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        contas_sincronizadas INTEGER DEFAULT 0,
+        transacoes_sincronizadas INTEGER DEFAULT 0,
+        cartoes_sincronizados INTEGER DEFAULT 0,
+        status VARCHAR(20) NOT NULL,
+        error_message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     await client.query('COMMIT');
     console.log('Database initialized successfully');
   } catch (e) {

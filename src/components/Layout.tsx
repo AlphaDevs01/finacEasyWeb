@@ -15,8 +15,15 @@ import {
   X,
   ChevronRight,
   Sun,
-  Moon
+  Moon,
+  Bell,
+  Tag,
+  Calendar,
+  Building2
 } from 'lucide-react';
+import CategoryManager from './ui/CategoryManager';
+import ReminderSystem from './ui/ReminderSystem';
+import PeriodComparison from './ui/PeriodComparison';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,6 +36,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState('light');
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [showReminderSystem, setShowReminderSystem] = useState(false);
+  const [showPeriodComparison, setShowPeriodComparison] = useState(false);
   
   useEffect(() => {
     if (configuracoes) {
@@ -68,7 +78,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/metas', label: 'Metas de Gastos', icon: <TrendingUp size={20} /> },
     { path: '/relatorios', label: 'Relatórios', icon: <BarChart4 size={20} /> },
     { path: '/importacao', label: 'Importar CSV', icon: <Upload size={20} /> },
-    { path: '/configuracoes', label: 'Configurações', icon: <Settings size={20} /> }
+    { path: '/openfinance', label: 'Open Finance', icon: <Building2 size={20} /> },
+    { path: '/configuracoes', label: 'Configurações', icon: <Settings size={20} /> },
+    { 
+      path: '#categorias', 
+      label: 'Categorias', 
+      icon: <Tag size={20} />,
+      onClick: () => setShowCategoryManager(true)
+    },
+    { 
+      path: '#lembretes', 
+      label: 'Lembretes', 
+      icon: <Bell size={20} />,
+      onClick: () => setShowReminderSystem(true)
+    },
+    { 
+      path: '#comparacao', 
+      label: 'Comparar Períodos', 
+      icon: <Calendar size={20} />,
+      onClick: () => setShowPeriodComparison(true)
+    }
   ];
   
   const isActive = (path: string) => location.pathname === path;
@@ -119,7 +148,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     href={item.path}
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(item.path);
+                      if (item.onClick) {
+                        item.onClick();
+                      } else {
+                        navigate(item.path);
+                      }
                     }}
                     className={`flex items-center p-3 rounded-xl transition-all duration-200 ${
                       isActive(item.path)
@@ -185,7 +218,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     href={item.path}
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(item.path);
+                      if (item.onClick) {
+                        item.onClick();
+                      } else {
+                        navigate(item.path);
+                      }
                       closeSidebar();
                     }}
                     className={`flex items-center p-3 rounded-xl transition-all duration-200 ${
@@ -230,6 +267,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {children}
         </main>
       </div>
+
+      {/* Modals */}
+      <CategoryManager
+        isOpen={showCategoryManager}
+        onClose={() => setShowCategoryManager(false)}
+        onCategoryChange={() => {
+          // Recarregar dados se necessário
+        }}
+      />
+
+      <ReminderSystem
+        isOpen={showReminderSystem}
+        onClose={() => setShowReminderSystem(false)}
+      />
+
+      <PeriodComparison
+        isOpen={showPeriodComparison}
+        onClose={() => setShowPeriodComparison(false)}
+      />
     </div>
   );
 };
