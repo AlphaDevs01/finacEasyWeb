@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Info, X, CreditCard, DollarSign } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -52,7 +52,7 @@ const ToastItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({
   React.useEffect(() => {
     const timer = setTimeout(() => {
       onClose(toast.id);
-    }, toast.duration || 3000);
+    }, toast.duration || 5000);
 
     return () => clearTimeout(timer);
   }, [toast.id, toast.duration, onClose]);
@@ -84,6 +84,7 @@ const ToastItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({
   );
 };
 
+
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -101,7 +102,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
       
       {/* Toast Container */}
-      <div className="fixed top-4 right-4 z-50 flex flex-col space-y-3 items-end w-[520px]">
+      <div className="fixed top-4 right-4 z-50 p-2 space-y-3 max-w-md">
         {toasts.map(toast => (
           <ToastItem
             key={toast.id}
