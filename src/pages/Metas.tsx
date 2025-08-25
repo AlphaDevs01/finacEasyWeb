@@ -180,7 +180,7 @@ const Metas: React.FC = () => {
           <select
             value={mes}
             onChange={(e) => setMes(Number(e.target.value))}
-            className="border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+            className="bg-white dark:bg-neutral-700 border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           >
             {meses.map((m, idx) => (
               <option key={m} value={idx + 1}>{m}</option>
@@ -192,7 +192,7 @@ const Metas: React.FC = () => {
           <select
             value={ano}
             onChange={(e) => setAno(Number(e.target.value))}
-            className="border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+            className="bg-white dark:bg-neutral-700 border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
           >
             {[ano - 1, ano, ano + 1].map(a => (
               <option key={a} value={a}>{a}</option>
@@ -203,7 +203,7 @@ const Metas: React.FC = () => {
 
       {/* Resumo Geral */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
+        <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
           <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
             <Target className="text-primary-600" size={20} />
             Total das Metas
@@ -213,7 +213,7 @@ const Metas: React.FC = () => {
           </p>
         </div>
         
-        <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
+        <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
           <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
             <TrendingUp className="text-accent-600" size={20} />
             Total Gasto
@@ -223,7 +223,7 @@ const Metas: React.FC = () => {
           </p>
         </div>
         
-        <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
+        <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200/50 hover:shadow-strong transition-all duration-300">
           <h3 className="text-lg font-semibold mb-2">Percentual Geral</h3>
           <p className={`text-2xl font-bold ${
             percentualGeral >= 100 ? 'text-accent-600' : 
@@ -248,7 +248,7 @@ const Metas: React.FC = () => {
       )}
 
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
+        <div className="bg-whit dark:bg-neutral-700 p-6 rounded-lg shadow mb-6">
           <h2 className="text-xl font-semibold mb-4">
             {editId ? 'Editar Meta' : 'Nova Meta'}
           </h2>
@@ -321,7 +321,7 @@ const Metas: React.FC = () => {
           const percentual = meta.valor_limite > 0 ? (meta.valor_gasto / meta.valor_limite) * 100 : 0;
           
           return (
-            <div key={meta.id} className="bg-white rounded-2xl shadow-medium border border-neutral-200/50 p-6 hover:shadow-strong transition-all duration-300 transform hover:scale-[1.01]">
+            <div key={meta.id} className="bg-white dark:bg-neutral-700 rounded-2xl shadow-medium border border-neutral-200/50 p-6 hover:shadow-strong transition-all duration-300 transform hover:scale-[1.01]">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-semibold">{meta.categoria}</h3>
@@ -353,7 +353,7 @@ const Metas: React.FC = () => {
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-sm text-neutral-600">
+                <span className="text-sm ">
                   {percentual.toFixed(1)}% utilizado
                 </span>
                 {percentual >= 90 && (
@@ -368,7 +368,7 @@ const Metas: React.FC = () => {
         })}
         
         {metas.length === 0 && (
-          <div className="text-center py-12 text-neutral-500">
+          <div className="text-center py-12 ">
             <Target size={48} className="mx-auto mb-2 opacity-50" />
             <p>Nenhuma meta definida para este período</p>
             <button

@@ -62,9 +62,9 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-strong max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-neutral-700 rounded-2xl shadow-strong max-w-2xl w-full max-h-[95vh] overflow-hidden">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200">
-          <h2 className="text-xl font-bold text-neutral-800 flex items-center gap-2">
+          <h2 className="text-xl font-bold bg-white dark:bg-neutral-700 flex items-center gap-2">
             <Filter size={24} />
             Filtros Avançados
           </h2>
@@ -93,7 +93,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                     type="date"
                     value={filters.dataInicio}
                     onChange={(e) => updateFilter('dataInicio', e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                    className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   />
                 </div>
                 <div>
@@ -104,7 +104,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                     type="date"
                     value={filters.dataFim}
                     onChange={(e) => updateFilter('dataFim', e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                    className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -128,7 +128,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                     placeholder="0,00"
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                    className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   />
                 </div>
                 <div>
@@ -142,7 +142,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                     placeholder="0,00"
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                    className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -158,7 +158,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 <select
                   value={filters.categoria}
                   onChange={(e) => updateFilter('categoria', e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 >
                   <option value="">Todas as categorias</option>
                   {categorias.map(categoria => (
@@ -177,7 +177,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 <select
                   value={filters.cartaoId}
                   onChange={(e) => updateFilter('cartaoId', e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 >
                   <option value="">Todos os cartões</option>
                   {cartoes.map(cartao => (
@@ -198,7 +198,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 <select
                   value={filters.status}
                   onChange={(e) => updateFilter('status', e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 >
                   <option value="">Todos os status</option>
                   <option value="pendente">Pendente</option>
@@ -215,7 +215,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 <select
                   value={filters.tipo}
                   onChange={(e) => updateFilter('tipo', e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 >
                   <option value="">Todos os tipos</option>
                   <option value="conta">Conta</option>
@@ -234,7 +234,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 value={filters.descricao}
                 onChange={(e) => updateFilter('descricao', e.target.value)}
                 placeholder="Digite parte da descrição..."
-                className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
               />
             </div>
           </div>
@@ -243,7 +243,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         <div className="p-6 border-t border-neutral-200 flex justify-between">
           <button
             onClick={handleClear}
-            className="px-4 py-2 text-neutral-600 hover:text-neutral-800 transition-colors duration-200"
+            className="px-4 py-2 bg-white dark:bg-neutral-700 hover:text-neutral-800 transition-colors duration-200"
           >
             Limpar Filtros
           </button>

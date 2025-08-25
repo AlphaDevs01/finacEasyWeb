@@ -138,7 +138,7 @@ const Faturas: React.FC = () => {
         <div>
           <label className="block text-sm font-medium mb-1">Mês</label>
           <select
-            className="border rounded px-2 py-1"
+            className="border rounded px-2 py-1 bg-white dark:bg-neutral-700"
             value={mes}
             onChange={e => setMes(Number(e.target.value))}
           >
@@ -150,7 +150,7 @@ const Faturas: React.FC = () => {
         <div>
           <label className="block text-sm font-medium mb-1">Ano</label>
           <select
-            className="border rounded px-2 py-1"
+            className="border rounded px-2 py-1 bg-white dark:bg-neutral-700"
             value={ano}
             onChange={e => setAno(Number(e.target.value))}
           >

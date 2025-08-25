@@ -627,7 +627,7 @@ const TransacoesPage: React.FC = () => {
         <select
           value={mesFilter}
           onChange={(e) => setMesFilter(parseInt(e.target.value))}
-          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-gray-800 dark:text-white"
+          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-neutral-700"
         >
           {months.map((month, index) => (
             <option key={month} value={index + 1}>
@@ -646,7 +646,7 @@ const TransacoesPage: React.FC = () => {
         <select
           value={anoFilter}
           onChange={(e) => setAnoFilter(parseInt(e.target.value))}
-          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-gray-800 dark:text-white"
+          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-neutral-700"
         >
           {generateYears().map((year) => (
             <option key={year} value={year}>
@@ -876,7 +876,7 @@ const TransacoesPage: React.FC = () => {
       {dataLoading ? (
         <TableSkeleton rows={8} />
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden text-gray-800">
+        <div className="bg-white dark:bg-neutral-700 rounded-lg shadow overflow-hidden">
           <div className="flex border-b">
             <button
               onClick={() => setActiveTab("despesas")}

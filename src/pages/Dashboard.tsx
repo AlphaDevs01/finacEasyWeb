@@ -129,7 +129,7 @@ const Dashboard: React.FC = () => {
   
   return (
     <div className="container mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 custom-flex">
         <h1 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100 tracking-tight">Dashboard</h1>
         
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4 md:mt-0 items-center">

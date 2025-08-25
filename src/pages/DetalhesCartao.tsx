@@ -247,7 +247,7 @@ const DetalhesCartao: React.FC = () => {
       </button>
 
       {/* Cartão info */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-700 p-6 rounded-lg text-white shadow mb-8">
+      <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow mb-8">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-bold mb-2">{cartao.nome}</h1>
@@ -291,7 +291,7 @@ const DetalhesCartao: React.FC = () => {
         <div>
           <label className="block text-sm font-medium mb-1">Mês</label>
           <select
-            className="border rounded px-2 py-1 text-gray-800"
+            className="border rounded px-2 py-1 bg-white dark:bg-neutral-700"
             value={mes}
             onChange={(e) => setMes(Number(e.target.value))}
           >
@@ -305,7 +305,7 @@ const DetalhesCartao: React.FC = () => {
         <div>
           <label className="block text-sm font-medium mb-1">Ano</label>
           <select
-            className="border rounded px-2 py-1 text-gray-800"
+            className="border rounded px-2 py-1 bg-white dark:bg-neutral-700"
             value={ano}
             onChange={(e) => setAno(Number(e.target.value))}
           >
@@ -332,7 +332,7 @@ const DetalhesCartao: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden text-gray-800">
+      <div className="bg-white dark:bg-neutral-700 rounded-lg shadow overflow-hidden ">
         <div className="p-4 border-b">
           <h2 className="text-xl font-semibold">Faturas</h2>
         </div>

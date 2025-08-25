@@ -117,14 +117,14 @@ const Relatorios: React.FC = () => {
   
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 custom-flex">
         <h1 className="text-2xl font-bold">Relatórios</h1>
         
         <div className="flex space-x-4">
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(Number(e.target.value))}
-            className="border rounded-md px-3 py-2 text-gray-800"
+            className="border rounded-md px-3 py-2 bg-white dark:bg-neutral-700"
           >
             {months.map((month, index) => (
               <option key={month} value={index + 1}>
@@ -136,7 +136,7 @@ const Relatorios: React.FC = () => {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="border rounded-md px-3 py-2 text-gray-800"
+            className="border rounded-md px-3 py-2 bg-white dark:bg-neutral-700"
           >
             {generateYears().map(year => (
               <option key={year} value={year}>
@@ -155,8 +155,8 @@ const Relatorios: React.FC = () => {
         </div>
       </div>
       
-      <div id="report-content" className="space-y-8 text-gray-800">
-        <div className="bg-white p-6 rounded-lg shadow">
+      <div id="report-content" className="space-y-8 ">
+        <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Evolução Anual</h2>
           <div className="h-80">
             <Line
@@ -189,7 +189,7 @@ const Relatorios: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">Despesas por Categoria</h2>
             <div className="h-80">
               <Pie
@@ -216,31 +216,31 @@ const Relatorios: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">Resumo do Mês</h2>
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+              <div className="flex justify-between items-center p-3 bg-white dark:bg-neutral-700 rounded">
                 <span>Receitas</span>
                 <span className="text-green-600 font-semibold">
                   {formatCurrency(dashboard?.receitas || 0)}
                 </span>
               </div>
               
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+              <div className="flex justify-between items-center p-3 bg-white dark:bg-neutral-700 rounded">
                 <span>Despesas</span>
                 <span className="text-red-600 font-semibold">
                   {formatCurrency(dashboard?.despesas || 0)}
                 </span>
               </div>
               
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+              <div className="flex justify-between items-center p-3 bg-white dark:bg-neutral-700 rounded">
                 <span>Saldo</span>
                 <span className={`font-semibold ${(dashboard?.saldo || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {formatCurrency(dashboard?.saldo || 0)}
                 </span>
               </div>
               
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+              <div className="flex justify-between items-center p-3 bg-white dark:bg-neutral-700 rounded">
                 <span>Faturas Pendentes</span>
                 <span className="text-yellow-600 font-semibold">
                   {formatCurrency(dashboard?.faturas_pendentes || 0)}

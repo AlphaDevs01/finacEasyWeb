@@ -123,21 +123,21 @@ const Investimentos: React.FC = () => {
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow text-gray-800">
+        <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-2">Total Investido</h3>
           <p className="text-2xl font-bold text-blue-600">
             {formatCurrency(calcularTotalInvestido())}
           </p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow text-gray-800">
+        <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow ">
           <h3 className="text-lg font-semibold mb-2">Rendimento Mensal</h3>
           <p className="text-2xl font-bold text-green-500">
             {formatCurrency(calcularRendimentoTotal())}
           </p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow text-gray-800">
+        <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow ">
           <h3 className="text-lg font-semibold mb-2">Rentabilidade Média</h3>
           <p className="text-2xl font-bold text-purple-600">
             {formatPercentage(
@@ -150,19 +150,19 @@ const Investimentos: React.FC = () => {
       </div>
       
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6 text-gray-800">
+        <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow mb-6 ">
           <h2 className="text-xl font-semibold mb-4">Novo Investimento</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1">
                   Tipo
                 </label>
                 <select
                   value={tipo}
                   onChange={(e) => setTipo(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
                   <option value="">Selecione...</option>
@@ -175,28 +175,28 @@ const Investimentos: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-mediu mb-1">
                   Nome
                 </label>
                 <input
                   type="text"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Ex: Tesouro IPCA+ 2026"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1">
                   Valor Aplicado
                 </label>
                 <input
                   type="number"
                   value={valorAplicado}
                   onChange={(e) => setValorAplicado(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                   min="0"
                   step="0.01"
                   required
@@ -204,14 +204,14 @@ const Investimentos: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1">
                   Rendimento Mensal (%)
                 </label>
                 <input
                   type="number"
                   value={rendimentoMensal}
                   onChange={(e) => setRendimentoMensal(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                   min="0"
                   step="0.01"
                   required
@@ -245,9 +245,9 @@ const Investimentos: React.FC = () => {
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-800">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
         {investimentos.map(investimento => (
-          <div key={investimento.id} className="bg-white p-6 rounded-lg shadow">
+          <div key={investimento.id} className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-semibold">{investimento.nome}</h3>
