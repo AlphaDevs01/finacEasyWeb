@@ -18,7 +18,6 @@ import Configuracoes from './pages/Configuracoes';
 import NotFound from './pages/NotFound';
 import Faturas from './pages/Faturas';
 import Metas from './pages/Metas';
-import OpenFinancePage from './pages/OpenFinancePage';
 
 function App() {
   return (
@@ -117,15 +116,6 @@ function App() {
                   element={
                     <PrivateRoute>
                       <Metas />
-                    </PrivateRoute>
-                  }
-                />
-                
-                <Route 
-                  path="/openfinance"
-                  element={
-                    <PrivateRoute>
-                      <OpenFinancePage />
                     </PrivateRoute>
                   }
                 />

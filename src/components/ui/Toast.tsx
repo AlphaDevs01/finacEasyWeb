@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Info, X, CreditCard, DollarSign } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -52,19 +52,19 @@ const ToastItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({
   React.useEffect(() => {
     const timer = setTimeout(() => {
       onClose(toast.id);
-    }, toast.duration || 5000);
+    }, toast.duration || 3000);
 
     return () => clearTimeout(timer);
   }, [toast.id, toast.duration, onClose]);
 
   return (
-    <div className={`max-w-sm w-full ${bgColors[toast.type]} border rounded-2xl shadow-strong pointer-events-auto ring-1 ring-black/5 dark:ring-white/5 overflow-hidden transform transition-all duration-500 ease-in-out animate-slide-down backdrop-blur-sm`}>
+    <div className={`w-[500px] max-w-full ${bgColors[toast.type]} border rounded-2xl shadow-strong pointer-events-auto ring-1 ring-black/5 dark:ring-white/5 overflow-hidden transform transition-all duration-500 ease-in-out animate-slide-down backdrop-blur-sm`}>
       <div className="p-4">
         <div className="flex items-start">
           <div className="flex-shrink-0">
             {toast.icon || <ToastIcon type={toast.type} />}
           </div>
-          <div className="ml-3 w-0 flex-1 pt-0.5">
+          <div className="ml-3 flex-1 pt-0.5">
             <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{toast.title}</p>
             {toast.message && (
               <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{toast.message}</p>
@@ -101,7 +101,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
       
       {/* Toast Container */}
-      <div className="fixed top-4 right-4 z-50 p-2 space-y-3 max-w-md">
+      <div className="fixed top-4 right-4 z-50 flex flex-col space-y-3 items-end w-[520px]">
         {toasts.map(toast => (
           <ToastItem
             key={toast.id}

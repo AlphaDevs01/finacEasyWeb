@@ -17,7 +17,7 @@ import {
   Trash2,
   AlertCircle,
   Edit,
-  Settings
+  Settings2
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -595,7 +595,7 @@ const TransacoesPage: React.FC = () => {
                 : 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50 shadow-soft'
             }`}
           >
-            <Settings size={20} />
+            <Settings2 size={20} />
             Filtros Avançados
             {Object.keys(advancedFilters).length > 0 && (
               <span className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
