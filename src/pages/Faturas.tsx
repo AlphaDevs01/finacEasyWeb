@@ -281,7 +281,7 @@ const Faturas: React.FC = () => {
       {/* Modal de Pagamento */}
       {pagamentoModal.open && pagamentoModal.fatura && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+          <div className="bg-white dark:bg-neutral-700 rounded-lg shadow-lg p-6 w-full max-w-md relative">
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
               onClick={() => setPagamentoModal({ open: false, fatura: null })}

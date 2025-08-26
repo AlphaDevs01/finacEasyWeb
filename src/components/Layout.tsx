@@ -71,7 +71,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/cartoes', label: 'Cartões', icon: <CreditCard size={20} /> },
-    { path: '/faturas', label: 'Faturas', icon: <CreditCard size={20} /> },
     { path: '/transacoes', label: 'Receitas/Despesas', icon: <DollarSign size={20} /> },
     { path: '/investimentos', label: 'Investimentos', icon: <TrendingUp size={20} /> },
     { path: '/metas', label: 'Metas de Gastos', icon: <TrendingUp size={20} /> },

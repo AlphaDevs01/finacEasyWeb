@@ -338,7 +338,7 @@ const DetalhesCartao: React.FC = () => {
         </div>
         <div className="divide-y">
           {faturasFiltradas.map((fatura) => (
-            <div key={fatura.id} className="p-4 hover:bg-gray-50">
+            <div key={fatura.id} className="p-4 hover:bg-neutral-600">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <button
@@ -398,7 +398,7 @@ const DetalhesCartao: React.FC = () => {
               </div>
               {/* Despesas */}
               {expanded[fatura.id] && (
-                <div className="mt-3 bg-gray-50 rounded p-3">
+                <div className="mt-3 bg-white dark:bg-neutral-700 rounded p-3">
                   {loadingFatura === fatura.id ? (
                     <div className="flex justify-center py-4">
                       <Loader2 className="animate-spin" size={24} />
@@ -450,20 +450,20 @@ const DetalhesCartao: React.FC = () => {
       {/* Modal de Pagamento */}
       {pagamentoModal.open && pagamentoModal.fatura && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+          <div className="bg-white dark:bg-neutral-700 rounded-lg shadow-lg p-6 w-full max-w-md relative">
             <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              className="absolute top-2 right-2 hover:text-gray-600"
               onClick={() => setPagamentoModal({ open: false, fatura: null })}
             >
               <XCircle size={24} />
             </button>
             <h2 className="text-xl font-semibold mb-2">Pagamento da Fatura</h2>
             <div className="mb-2">
-              <span className="text-gray-600">Cartão: </span>
+              <span>Cartão: </span>
               <span className="font-medium">{cartao.nome}</span>
             </div>
             <div className="mb-2">
-              <span className="text-gray-600">Valor em aberto: </span>
+              <span>Valor em aberto: </span>
               <span className="font-semibold">
                 {formatCurrency(pagamentoModal.fatura.valor_total)}
               </span>
@@ -489,7 +489,7 @@ const DetalhesCartao: React.FC = () => {
                   className="w-full border rounded px-3 py-2"
                   placeholder="0,00"
                   required
-                  className="w-full border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="bg-white dark:bg-neutral-700 w-full border border-neutral-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 />
               </div>
               <button
