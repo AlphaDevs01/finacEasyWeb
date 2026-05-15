@@ -1,4 +1,4 @@
-const url = 'http://localhost:3000/api/webhooks/openfinance';
+const url = 'https://financeasy.alphadevss.com.br/api/webhooks/openfinance';
 
 async function main() {
   const response = await fetch(url, {

@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import db from './db/index.js';
@@ -26,7 +25,6 @@ import openfinanceWebhookRoutes from './routes/openfinanceWebhook.js';
 import { authenticateToken } from './middleware/auth.js';
 import { generateRequestId } from './config/security.js';
 
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -78,8 +76,20 @@ app.use('/api/auth/register', rateLimit({
   legacyHeaders: false
 }));
 
-// Inicializar banco
-db.initDatabase();
+// Inicializar banco antes das rotas de API.
+const dbReady = db.initDatabase();
+
+app.use('/api', async (req, res, next) => {
+  if (req.path === '/health') return next();
+
+  try {
+    await dbReady;
+    return next();
+  } catch (error) {
+    console.error(`[${req.id}] Erro ao inicializar banco:`, error);
+    return res.status(503).json({ error: 'Banco de dados indisponível', requestId: req.id });
+  }
+});
 
 // Rotas públicas
 app.use('/api/auth', authRoutes);
@@ -119,11 +129,18 @@ app.use((err, req, res, _next) => {
   res.status(err.status || 500).json({ error: 'Erro interno do servidor', requestId: req.id });
 });
 
-// Só roda localmente (em dev)
+// Só roda localmente (em dev). Em produção/Vercel, exportamos o app.
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-  });
+  dbReady
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Servidor rodando na porta ${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.error('Erro ao iniciar servidor:', error);
+      process.exit(1);
+    });
 }
 
 export default app;

@@ -69,7 +69,8 @@ export const usePluggy = (): UsePluggyReturn => {
       setIsLoading(true);
       
       // Criar item no Pluggy
-      const itemId = await pluggyService.createItem(connectorId, credentials);
+      const connector = connectors.find((item) => item.id === connectorId);
+      const itemId = await pluggyService.createItem(connectorId, credentials, connector?.name);
       
       // Aguardar alguns segundos para o banco processar
       await new Promise(resolve => setTimeout(resolve, 3000));

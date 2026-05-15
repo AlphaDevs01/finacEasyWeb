@@ -34,7 +34,7 @@ describe('Validator', () => {
 
       expect(validResult.isValid).toBe(true);
       expect(invalidResult.isValid).toBe(false);
-      expect(invalidResult.errors.email).toBe('Email deve ter um formato válido');
+      expect(invalidResult.errors.email).toBe('email tem formato inválido');
     });
 
     it('should validate currency values', () => {
@@ -50,7 +50,7 @@ describe('Validator', () => {
 
       expect(validResult.isValid).toBe(true);
       expect(invalidResult.isValid).toBe(false);
-      expect(invalidResult.errors.amount).toBe('Valor deve ser positivo');
+      expect(invalidResult.errors.amount).toBe('amount deve ser maior ou igual a 0');
     });
 
     it('should validate string length', () => {

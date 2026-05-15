@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node server/index.js",
-    "server": "node server/index.js",
+    "start": "node -r dotenv/config server/index.js",
+    "server": "node -r dotenv/config server/index.js",
     "vercel-build": "vite build",
     "test": "vitest",
     "test:ui": "vitest --ui",

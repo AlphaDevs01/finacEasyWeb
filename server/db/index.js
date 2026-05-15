@@ -200,6 +200,12 @@ const initDatabase = async () => {
       );
     `);
 
+    await client.query('ALTER TABLE openfinance_connections ADD COLUMN IF NOT EXISTS connectorId INTEGER;');
+    await client.query('ALTER TABLE openfinance_connections ADD COLUMN IF NOT EXISTS itemId VARCHAR(255);');
+    await client.query('ALTER TABLE openfinance_connections ADD COLUMN IF NOT EXISTS bankName VARCHAR(255);');
+    await client.query('ALTER TABLE openfinance_connections ADD COLUMN IF NOT EXISTS synced_at TIMESTAMP;');
+    await client.query('ALTER TABLE openfinance_connections ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;');
+
     // Tabela de histórico de sincronização
     await client.query(`
       CREATE TABLE IF NOT EXISTS openfinance_sync_history (
@@ -236,6 +242,7 @@ const initDatabase = async () => {
   } catch (e) {
     await client.query('ROLLBACK');
     console.error('Error initializing database:', e);
+    throw e;
   } finally {
     client.release();
   }

@@ -29,9 +29,10 @@ const requirePluggyEnv = () => {
 
 const sanitizePluggyError = (error) => {
   const status = error?.response?.status;
-  const pluggyMessage = error?.response?.data?.message || error?.response?.data?.error;
+  const data = error?.response?.data;
+  const pluggyMessage = data?.message || data?.error || (Array.isArray(data?.errors) ? data.errors.map((item) => item.message || item).join('; ') : null);
 
-  if (status === 400) return 'Dados inválidos para conexão Open Finance.';
+  if (status === 400) return pluggyMessage || 'Dados inválidos para conexão Open Finance.';
   if (status === 401 || status === 403) return 'Falha de autenticação com provedor Open Finance.';
   if (status === 404) return 'Recurso Open Finance não encontrado.';
   if (status === 429) return 'Limite de requisições Open Finance excedido. Tente novamente depois.';
@@ -43,6 +44,14 @@ const requestPluggy = async (config) => {
   try {
     return await http.request(config);
   } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Pluggy request failed:', {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        url: config?.url
+      });
+    }
+
     const safeMessage = sanitizePluggyError(error);
     const safeError = new Error(safeMessage);
     safeError.status = error?.response?.status || 502;
@@ -94,14 +103,15 @@ export const createConnectToken = async (itemId) => {
   return response.data;
 };
 
-export const createItem = async ({ connectorId, credentials }) => {
+export const createItem = async ({ connectorId, credentials, clientUserId }) => {
   const response = await requestPluggy({
     method: 'POST',
     url: '/items',
     headers: await authHeaders(),
     data: {
       connectorId,
-      parameters: credentials
+      parameters: credentials,
+      ...(clientUserId ? { clientUserId: String(clientUserId) } : {})
     }
   });
   return response.data;

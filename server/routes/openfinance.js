@@ -2,6 +2,16 @@ import express from 'express';
 import db from '../db/index.js';
 import * as pluggyService from '../services/pluggyService.js';
 
+const normalizeCredentials = (credentials) => {
+  if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) return null;
+
+  return Object.fromEntries(
+    Object.entries(credentials)
+      .map(([key, value]) => [String(key).trim(), typeof value === 'string' ? value.trim() : value])
+      .filter(([key, value]) => key && value !== undefined && value !== null && String(value).trim() !== '')
+  );
+};
+
 const router = express.Router();
 
 const safeError = (res, error, fallback = 'Erro na operação Open Finance') => {
@@ -56,19 +66,25 @@ router.post('/connect-token', async (req, res) => {
 router.post('/items', async (req, res) => {
   const userId = req.user.id;
   const { connectorId, credentials = {}, bankName } = req.body || {};
+  const parsedConnectorId = Number(connectorId);
+  const normalizedCredentials = normalizeCredentials(credentials);
 
-  if (!Number.isInteger(Number(connectorId)) || typeof credentials !== 'object' || Array.isArray(credentials)) {
+  if (!Number.isInteger(parsedConnectorId) || parsedConnectorId <= 0 || !normalizedCredentials || Object.keys(normalizedCredentials).length === 0) {
     return res.status(400).json({ error: 'Payload inválido para conexão Open Finance' });
   }
 
   try {
-    const item = await pluggyService.createItem({ connectorId: Number(connectorId), credentials });
+    const item = await pluggyService.createItem({
+      connectorId: parsedConnectorId,
+      credentials: normalizedCredentials,
+      clientUserId: userId
+    });
 
     await db.query(
       `INSERT INTO openfinance_connections (userId, bank_id, connection_token, connectorId, itemId, bankName, status, connected_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
        ON CONFLICT DO NOTHING`,
-      [userId, String(connectorId), item.id, Number(connectorId), item.id, bankName || null, item.status || 'CREATED']
+      [userId, String(parsedConnectorId), item.id, parsedConnectorId, item.id, bankName || item.connector?.name || null, item.status || 'CREATED']
     );
 
     res.status(201).json(item);

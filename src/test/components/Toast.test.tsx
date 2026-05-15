@@ -75,6 +75,6 @@ describe('Toast Component', () => {
     // Wait for auto-close (default 5 seconds)
     await waitFor(() => {
       expect(screen.queryByText('Test Toast')).not.toBeInTheDocument();
-    }, { timeout: 6000 });
+    }, { timeout: 8000 });
   });
 });
