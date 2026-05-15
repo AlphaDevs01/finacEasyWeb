@@ -131,7 +131,7 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-neutral-700 rounded-2xl shadow-strong max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-strong max-w-6xl w-full max-h-[90vh] overflow-hidden">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200">
           <h2 className="text-2xl font-bold text-neutral-800 flex items-center gap-2">
             <Calendar size={24} />
@@ -139,7 +139,7 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
           </h2>
           <button
             onClick={onClose}
-            className="p-2  hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-all duration-200"
+            className="p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-all duration-200"
           >
             ×
           </button>
@@ -148,13 +148,13 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Seletores de Período */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white dark:bg-neutral-700 p-4 rounded-2xl border border-primary-200">
+            <div className="bg-primary-50 p-4 rounded-2xl border border-primary-200">
               <h3 className="text-lg font-semibold mb-3 text-primary-800">Período 1 (Atual)</h3>
               <div className="grid grid-cols-2 gap-3">
                 <select
                   value={periodo1.mes}
                   onChange={(e) => setPeriodo1({ ...periodo1, mes: Number(e.target.value) })}
-                  className="bg-white dark:bg-neutral-700 px-3 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="px-3 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
                   {meses.map((mes, index) => (
                     <option key={index} value={index}>{mes}</option>
@@ -164,18 +164,18 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
                   type="number"
                   value={periodo1.ano}
                   onChange={(e) => setPeriodo1({ ...periodo1, ano: Number(e.target.value) })}
-                  className="bg-white dark:bg-neutral-700 px-3 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="px-3 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
             </div>
 
-            <div className="bg-white dark:bg-neutral-700 p-4 rounded-2xl border border-secondary-200">
+            <div className="bg-secondary-50 p-4 rounded-2xl border border-secondary-200">
               <h3 className="text-lg font-semibold mb-3 text-secondary-800">Período 2 (Comparação)</h3>
               <div className="grid grid-cols-2 gap-3">
                 <select
                   value={periodo2.mes}
                   onChange={(e) => setPeriodo2({ ...periodo2, mes: Number(e.target.value) })}
-                  className="bg-white dark:bg-neutral-700 px-3 py-2 border border-secondary-300 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
+                  className="px-3 py-2 border border-secondary-300 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                 >
                   {meses.map((mes, index) => (
                     <option key={index} value={index}>{mes}</option>
@@ -185,7 +185,7 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
                   type="number"
                   value={periodo2.ano}
                   onChange={(e) => setPeriodo2({ ...periodo2, ano: Number(e.target.value) })}
-                  className="bg-white dark:bg-neutral-700 px-3 py-2 border border-secondary-300 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
+                  className="px-3 py-2 border border-secondary-300 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                 />
               </div>
             </div>
@@ -199,17 +199,17 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
             <>
               {/* Cards de Comparação */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200">
+                <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200">
                   <h4 className="text-lg font-semibold mb-4 text-green-600">Receitas</h4>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm ">{comparisonData.periodo1.label}</span>
+                      <span className="text-sm text-neutral-600">{comparisonData.periodo1.label}</span>
                       <span className="font-semibold text-green-600">
                         {formatCurrency(comparisonData.periodo1.receitas)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm ">{comparisonData.periodo2.label}</span>
+                      <span className="text-sm text-neutral-600">{comparisonData.periodo2.label}</span>
                       <span className="font-semibold text-green-600">
                         {formatCurrency(comparisonData.periodo2.receitas)}
                       </span>
@@ -225,17 +225,17 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200">
+                <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200">
                   <h4 className="text-lg font-semibold mb-4 text-red-600">Despesas</h4>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm ">{comparisonData.periodo1.label}</span>
+                      <span className="text-sm text-neutral-600">{comparisonData.periodo1.label}</span>
                       <span className="font-semibold text-red-600">
                         {formatCurrency(comparisonData.periodo1.despesas)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm ">{comparisonData.periodo2.label}</span>
+                      <span className="text-sm text-neutral-600">{comparisonData.periodo2.label}</span>
                       <span className="font-semibold text-red-600">
                         {formatCurrency(comparisonData.periodo2.despesas)}
                       </span>
@@ -251,17 +251,17 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200">
+                <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200">
                   <h4 className="text-lg font-semibold mb-4 text-blue-600">Saldo</h4>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm ">{comparisonData.periodo1.label}</span>
+                      <span className="text-sm text-neutral-600">{comparisonData.periodo1.label}</span>
                       <span className={`font-semibold ${comparisonData.periodo1.saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatCurrency(comparisonData.periodo1.saldo)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm ">{comparisonData.periodo2.label}</span>
+                      <span className="text-sm text-neutral-600">{comparisonData.periodo2.label}</span>
                       <span className={`font-semibold ${comparisonData.periodo2.saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatCurrency(comparisonData.periodo2.saldo)}
                       </span>
@@ -279,7 +279,7 @@ const PeriodComparison: React.FC<PeriodComparisonProps> = ({ isOpen, onClose }) 
               </div>
 
               {/* Gráfico de Comparação */}
-              <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl shadow-medium border border-neutral-200">
+              <div className="bg-white p-6 rounded-2xl shadow-medium border border-neutral-200">
                 <h3 className="text-xl font-semibold mb-6">Comparação Visual</h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">

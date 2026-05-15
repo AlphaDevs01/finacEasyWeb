@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -29,21 +28,27 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        // Você pode customizar aqui se quiser
-      },
+      workbox: {},
       includeAssets: [
         '/android-chrome-192x192.png',
         '/android-chrome-512x512.png',
       ],
     }),
   ],
+
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+  },
+
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+
   server: {
     proxy: {
-      '/api': 'http://localhost:3000', // Adicione esta linha para proxy das rotas API para o backend
+      '/api': 'http://localhost:3000',
     },
   },
 });

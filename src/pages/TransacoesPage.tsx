@@ -17,7 +17,7 @@ import {
   Trash2,
   AlertCircle,
   Edit,
-  Settings2
+  Settings
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -169,16 +169,7 @@ const TransacoesPage: React.FC = () => {
           let faturaId: number | null = null;
           let fatura = null;
           try {
-            // Use a chave correta do token
-            let token = localStorage.getItem("@FinanceApp:token");
-            if (token && token.startsWith('"') && token.endsWith('"')) {
-              token = token.slice(1, -1);
-            }
-            const res = await api.get(`faturas/cartao/${cartaoId}`, {
-              headers: {
-                Authorization: token ? `Bearer ${token}` : "",
-              },
-            });
+            const res = await api.get(`faturas/cartao/${cartaoId}`);
             if (res.status === 401) {
               setError("Sessão expirada. Faça login novamente.");
               setLoading(false);
@@ -197,10 +188,6 @@ const TransacoesPage: React.FC = () => {
           }
 
           if (!fatura) {
-            let token = localStorage.getItem("@FinanceApp:token");
-            if (token && token.startsWith('"') && token.endsWith('"')) {
-              token = token.slice(1, -1);
-            }
             // Corrija: valor_total deve ser um número (0), não string ou undefined
             try {
               const faturaRes = await api.post(
@@ -211,11 +198,6 @@ const TransacoesPage: React.FC = () => {
                   ano_referencia,
                   valor_total: 0, // Garante que é número
                   status: "aberta",
-                },
-                {
-                  headers: {
-                    Authorization: token ? `Bearer ${token}` : "",
-                  },
                 }
               );
               fatura = faturaRes.data;
@@ -244,20 +226,11 @@ const TransacoesPage: React.FC = () => {
           });
 
           // Atualiza valor_total da fatura
-          let token = localStorage.getItem("@FinanceApp:token");
-          if (token && token.startsWith('"') && token.endsWith('"')) {
-            token = token.slice(1, -1);
-          }
           await api.put(
             `/faturas/${faturaId}`,
             {
               valor_total: parseFloat(fatura.valor_total) + valorParcela,
               status: fatura.status,
-            },
-            {
-              headers: {
-                Authorization: token ? `Bearer ${token}` : "",
-              },
             }
           );
         }
@@ -578,10 +551,10 @@ const TransacoesPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6 custom-flex">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Receitas e Despesas</h1>
 
-        <div className="flex gap-2 custom-flex">
+        <div className="flex gap-2">
           <ExportButton
             data={filteredData}
             filename={`${activeTab}-${mesFilter}-${anoFilter}`}
@@ -595,7 +568,7 @@ const TransacoesPage: React.FC = () => {
                 : 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50 shadow-soft'
             }`}
           >
-            <Settings2 size={20} />
+            <Settings size={20} />
             Filtros Avançados
             {Object.keys(advancedFilters).length > 0 && (
               <span className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
@@ -627,7 +600,7 @@ const TransacoesPage: React.FC = () => {
         <select
           value={mesFilter}
           onChange={(e) => setMesFilter(parseInt(e.target.value))}
-          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-neutral-700"
+          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-gray-800 dark:text-white"
         >
           {months.map((month, index) => (
             <option key={month} value={index + 1}>
@@ -646,7 +619,7 @@ const TransacoesPage: React.FC = () => {
         <select
           value={anoFilter}
           onChange={(e) => setAnoFilter(parseInt(e.target.value))}
-          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-neutral-700"
+          className="border border-gray-300 rounded-md px-3 py-2 bg-white dark:bg-gray-800 dark:text-white"
         >
           {generateYears().map((year) => (
             <option key={year} value={year}>
@@ -673,7 +646,7 @@ const TransacoesPage: React.FC = () => {
       </div>
 
       {showForm && (
-        <div className="bg-white dark:bg-neutral-700 p-6 rounded-lg shadow mb-6">
+        <div className="bg-white p-6 rounded-lg shadow mb-6 text-gray-800">
           <h2 className="text-lg font-semibold mb-4">
             {editId
               ? `Editar ${activeTab === "despesas" ? "Despesa" : "Receita"}`
@@ -682,27 +655,27 @@ const TransacoesPage: React.FC = () => {
           <form onSubmit={editId ? handleSaveEdit : handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Descrição
                 </label>
                 <input
                   type="text"
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
-                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium  mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Valor
                 </label>
                 <input
                   type="number"
                   value={valor}
                   onChange={(e) => setValor(e.target.value)}
-                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                   min="0"
                   step="0.01"
                   required
@@ -710,26 +683,26 @@ const TransacoesPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Data
                 </label>
                 <input
                   type="date"
                   value={data}
                   onChange={(e) => setData(e.target.value)}
-                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Categoria
                 </label>
                 <select
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value)}
-                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   required
                 >
                   <option value="">Selecione...</option>
@@ -744,13 +717,13 @@ const TransacoesPage: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Status
                 </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   required
                 >
                   {statusOptions.map((option) => (
@@ -762,27 +735,27 @@ const TransacoesPage: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Data de Vencimento (opcional)
                 </label>
                 <input
                   type="date"
                   value={dataVencimento}
                   onChange={(e) => setDataVencimento(e.target.value)}
-                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 />
               </div>
 
               {activeTab === "despesas" && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Tipo
                     </label>
                     <select
                       value={tipo}
                       onChange={(e) => setTipo(e.target.value)}
-                      className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                       required
                     >
                       <option value="conta">Conta</option>
@@ -793,13 +766,13 @@ const TransacoesPage: React.FC = () => {
                   {tipo === "cartao" && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           Cartão
                         </label>
                         <select
                           value={cartaoId}
                           onChange={(e) => setCartaoId(e.target.value)}
-                          className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                           required
                         >
                           <option value="">Selecione...</option>
@@ -811,7 +784,7 @@ const TransacoesPage: React.FC = () => {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           Parcelas
                         </label>
                         <input
@@ -820,7 +793,7 @@ const TransacoesPage: React.FC = () => {
                           max={36}
                           value={parcelas}
                           onChange={(e) => setParcelas(Number(e.target.value))}
-                          className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                           required
                         />
                       </div>
@@ -830,13 +803,13 @@ const TransacoesPage: React.FC = () => {
               )}
               
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium  mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Observações (opcional)
                 </label>
                 <textarea
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
-                  className="bg-white dark:bg-neutral-700 w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                   rows={3}
                   placeholder="Adicione observações sobre esta transação..."
                 />
@@ -876,14 +849,14 @@ const TransacoesPage: React.FC = () => {
       {dataLoading ? (
         <TableSkeleton rows={8} />
       ) : (
-        <div className="bg-white dark:bg-neutral-700 rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-hidden text-gray-800">
           <div className="flex border-b">
             <button
               onClick={() => setActiveTab("despesas")}
               className={`flex-1 px-4 py-3 text-center font-medium ${
                 activeTab === "despesas"
-                  ? "bg-white dark:bg-neutral-600  border-b-2 border-primary-600"
-                  : "text-neutral-500 hover:text-neutral-700 dark:hover:bg-neutral-500"
+                  ? "bg-primary-50 text-primary-600 border-b-2 border-primary-600"
+                  : "text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50"
               }`}
             >
               Despesas ({despesas.length})
@@ -893,8 +866,8 @@ const TransacoesPage: React.FC = () => {
               onClick={() => setActiveTab("receitas")}
               className={`flex-1 px-4 py-3 text-center font-medium ${
                 activeTab === "receitas"
-                  ? "bg-white dark:bg-neutral-600  border-b-2 border-primary-600"
-                  : "text-neutral-500 hover:text-neutral-700 hover:bg-neutral-500"
+                  ? "bg-primary-50 text-primary-600 border-b-2 border-primary-600"
+                  : "text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50"
               }`}
             >
               Receitas ({receitas.length})
@@ -903,7 +876,7 @@ const TransacoesPage: React.FC = () => {
 
           <div className="divide-y">
             {filteredData.map((item) => (
-              <div key={item.id} className="p-4 hover:bg-slate-50 dark:hover:bg-neutral-600 transition-colors">
+              <div key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     {activeTab === "despesas" ? (
@@ -967,7 +940,7 @@ const TransacoesPage: React.FC = () => {
                           <select
                             value={item.status}
                             onChange={(e) => handleStatusChange(item, e.target.value)}
-                            className="bg-white dark:bg-neutral-700 text-xs border border-neutral-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                            className="text-xs border border-neutral-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                           >
                             <option value="pendente">Pendente</option>
                             <option value="paga">

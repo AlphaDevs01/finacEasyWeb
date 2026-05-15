@@ -1,16 +1,18 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
+import { requiredEnv } from '../config/security.js';
 
 dotenv.config();
 
 const { Pool } = pg;
 
-// Create a new pool
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_AWG3bkOE2cSi@ep-plain-dawn-acz8jya6-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  connectionString: requiredEnv('DATABASE_URL'),
+  ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false },
+  max: Number(process.env.DATABASE_POOL_MAX || 10),
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000
 });
-
 // Database initialization
 const initDatabase = async () => {
   const client = await pool.connect();
@@ -168,6 +170,66 @@ const initDatabase = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Tabela de configurações Open Finance
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS openfinance_settings (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+        auto_sync BOOLEAN DEFAULT FALSE,
+        sync_frequency VARCHAR(20) DEFAULT 'daily',
+        last_sync TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tabela de conexões bancárias
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS openfinance_connections (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        bank_id VARCHAR(50),
+        connection_token VARCHAR(255) NOT NULL,
+        connectorId INTEGER,
+        itemId VARCHAR(255),
+        bankName VARCHAR(255),
+        status VARCHAR(20) DEFAULT 'pending',
+        connected_at TIMESTAMP,
+        disconnected_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tabela de histórico de sincronização
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS openfinance_sync_history (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        contas_sincronizadas INTEGER DEFAULT 0,
+        transacoes_sincronizadas INTEGER DEFAULT 0,
+        cartoes_sincronizados INTEGER DEFAULT 0,
+        status VARCHAR(20) NOT NULL,
+        error_message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+
+    // Eventos de webhook Open Finance com idempotência mínima
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS openfinance_webhook_events (
+        id SERIAL PRIMARY KEY,
+        idempotency_key VARCHAR(255) UNIQUE NOT NULL,
+        event VARCHAR(80) NOT NULL,
+        item_id VARCHAR(255) NOT NULL,
+        status VARCHAR(80),
+        payload JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await client.query('CREATE INDEX IF NOT EXISTS idx_openfinance_connections_user_token ON openfinance_connections(userId, connection_token);');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_openfinance_sync_history_user_created ON openfinance_sync_history(userId, created_at DESC);');
 
     await client.query('COMMIT');
     console.log('Database initialized successfully');

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useFinance } from '../contexts/FinanceContext';
 import { Sun, Moon, Bell, BellOff, Save, AlertCircle } from 'lucide-react';
+import { api } from '../services/api';
 
 const Configuracoes: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -55,39 +56,10 @@ const Configuracoes: React.FC = () => {
     setLoading(true);
 
     try {
-      // Pegue o token do localStorage (JWT) com a chave correta usada no projeto
-      let token = localStorage.getItem('@FinanceApp:token');
-      if (!token) {
-        token = sessionStorage.getItem('@FinanceApp:token');
-      }
-      if (!token) {
-        setError('Sessão expirada. Faça login novamente.');
-        setLoading(false);
-        return;
-      }
-
-      // Troca de senha deve ser feita no endpoint /api/configuracoes/senha
-      // Use a URL do backend diretamente para evitar problemas de proxy
-      const apiUrl =
-        import.meta.env.VITE_API_URL?.replace(/\/$/, '') ||
-        'http://localhost:3000';
-
-      const response = await fetch(`${apiUrl}/api/configuracoes/senha`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          senha_atual: senhaAtual,
-          nova_senha: novaSenha,
-        }),
+      await api.put('/configuracoes/senha', {
+        senha_atual: senhaAtual,
+        nova_senha: novaSenha,
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erro ao atualizar senha');
-      }
 
       setSenhaAtual('');
       setNovaSenha('');

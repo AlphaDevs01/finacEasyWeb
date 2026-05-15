@@ -76,8 +76,9 @@ JWT_SECRET=your_jwt_secret_here
 FRONTEND_URL=http://localhost:5173
 
 # Pluggy API (Open Finance)
-VITE_PLUGGY_CLIENT_ID=your_pluggy_client_id
-VITE_PLUGGY_CLIENT_SECRET=your_pluggy_client_secret
+PLUGGY_CLIENT_ID=your_pluggy_client_id
+PLUGGY_CLIENT_SECRET=your_pluggy_client_secret
+PLUGGY_WEBHOOK_SECRET=your_shared_webhook_secret
 
 # Environment
 NODE_ENV=development
@@ -89,7 +90,7 @@ PORT=3000
 1. Acesse [Pluggy Dashboard](https://dashboard.pluggy.ai)
 2. Crie uma conta e um novo projeto
 3. Obtenha suas credenciais (Client ID e Client Secret)
-4. Configure o webhook URL: `https://seu-dominio.com/api/openfinance/webhook`
+4. Configure o webhook URL: `https://seu-dominio.com/api/webhooks/openfinance`
 5. Adicione as credenciais no arquivo `.env`
 
 ### 3. Instalação

@@ -18,7 +18,8 @@ import {
   Moon,
   Bell,
   Tag,
-  Calendar
+  Calendar,
+  Building2
 } from 'lucide-react';
 import CategoryManager from './ui/CategoryManager';
 import ReminderSystem from './ui/ReminderSystem';
@@ -71,11 +72,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/cartoes', label: 'Cartões', icon: <CreditCard size={20} /> },
+    { path: '/faturas', label: 'Faturas', icon: <CreditCard size={20} /> },
     { path: '/transacoes', label: 'Receitas/Despesas', icon: <DollarSign size={20} /> },
     { path: '/investimentos', label: 'Investimentos', icon: <TrendingUp size={20} /> },
     { path: '/metas', label: 'Metas de Gastos', icon: <TrendingUp size={20} /> },
     { path: '/relatorios', label: 'Relatórios', icon: <BarChart4 size={20} /> },
     { path: '/importacao', label: 'Importar CSV', icon: <Upload size={20} /> },
+    { path: '/openfinance', label: 'Open Finance', icon: <Building2 size={20} /> },
     { path: '/configuracoes', label: 'Configurações', icon: <Settings size={20} /> },
     { 
       path: '#categorias', 

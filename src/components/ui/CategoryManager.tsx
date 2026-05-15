@@ -147,12 +147,12 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-neutral-700 rounded-2xl shadow-strong max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-strong max-w-4xl w-full max-h-[90vh] overflow-hidden">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200">
-          <h2 className="text-2xl font-bold ">Gerenciar Categorias</h2>
+          <h2 className="text-2xl font-bold text-neutral-800">Gerenciar Categorias</h2>
           <button
             onClick={onClose}
-            className="p-2  hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-all duration-200"
+            className="p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-all duration-200"
           >
             <X size={24} />
           </button>
@@ -171,7 +171,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
           </div>
 
           {showForm && (
-            <div className="bg-white dark:bg-neutral-700 p-6 rounded-2xl mb-6 border border-neutral-200">
+            <div className="bg-neutral-50 p-6 rounded-2xl mb-6 border border-neutral-200">
               <h4 className="text-lg font-semibold mb-4">
                 {editId ? 'Editar Categoria' : 'Nova Categoria'}
               </h4>
@@ -179,26 +179,26 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium  mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Nome da Categoria
                     </label>
                     <input
                       type="text"
                       value={formData.nome}
                       onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                      className="bg-white dark:bg-neutral-700  w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Tipo
                     </label>
                     <select
                       value={formData.tipo}
                       onChange={(e) => setFormData({ ...formData, tipo: e.target.value as 'receita' | 'despesa' })}
-                      className="bg-white dark:bg-neutral-700  w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                     >
                       <option value="despesa">Despesa</option>
                       <option value="receita">Receita</option>
@@ -207,7 +207,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium  mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Cor
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -226,7 +226,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Ícone
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -277,7 +277,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                 {categories.filter(cat => cat.tipo === 'despesa').map(category => (
                   <div
                     key={category.id}
-                    className="flex items-center justify-between p-3 bg-white dark:bg-neutral-700 rounded-xl border border-neutral-200 hover:shadow-medium transition-all duration-200"
+                    className="flex items-center justify-between p-3 bg-white rounded-xl border border-neutral-200 hover:shadow-medium transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -291,13 +291,13 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEdit(category)}
-                        className="p-2  hover:text-primary-500 rounded-full hover:bg-primary-50 transition-all duration-200"
+                        className="p-2 text-neutral-400 hover:text-primary-500 rounded-full hover:bg-primary-50 transition-all duration-200"
                       >
                         <Edit size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(category.id)}
-                        className="p-2  hover:text-accent-500 rounded-full hover:bg-accent-50 transition-all duration-200"
+                        className="p-2 text-neutral-400 hover:text-accent-500 rounded-full hover:bg-accent-50 transition-all duration-200"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -313,11 +313,11 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                 {categories.filter(cat => cat.tipo === 'receita').map(category => (
                   <div
                     key={category.id}
-                    className="flex items-center justify-between p-3 bg-white dark:bg-neutral-700 rounded-xl border border-neutral-200 hover:shadow-medium transition-all duration-200"
+                    className="flex items-center justify-between p-3 bg-white rounded-xl border border-neutral-200 hover:shadow-medium transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center  text-sm font-medium"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
                         style={{ backgroundColor: category.cor }}
                       >
                         {category.icone}
@@ -327,13 +327,13 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEdit(category)}
-                        className="p-2  hover:text-primary-500 rounded-full hover:bg-primary-50 transition-all duration-200"
+                        className="p-2 text-neutral-400 hover:text-primary-500 rounded-full hover:bg-primary-50 transition-all duration-200"
                       >
                         <Edit size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(category.id)}
-                        className="p-2  hover:text-accent-500 rounded-full hover:bg-accent-50 transition-all duration-200"
+                        className="p-2 text-neutral-400 hover:text-accent-500 rounded-full hover:bg-accent-50 transition-all duration-200"
                       >
                         <Trash2 size={16} />
                       </button>

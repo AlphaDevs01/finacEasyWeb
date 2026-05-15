@@ -1,23 +1,28 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { jwtSecret } from '../config/security.js';
 
 dotenv.config();
 
+const extractToken = (req) => {
+  if (req.cookies?.access_token) return req.cookies.access_token;
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) return authHeader.slice(7);
+  return null;
+};
+
 export const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
+  const token = extractToken(req);
   if (!token) return res.status(401).json({ error: 'Acesso negado' });
 
   try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET || 'dd59d6bec5bb7426b5fd2427cbeeb79dfe67e60bf9dedab06bc96fe037d105af');
-    req.user = verified;
+    req.user = jwt.verify(token, jwtSecret());
     next();
-  } catch (error) {
-    res.status(403).json({ error: 'Token inválido' });
+  } catch {
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
   }
 };
 
 export const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET || 'dd59d6bec5bb7426b5fd2427cbeeb79dfe67e60bf9dedab06bc96fe037d105af', { expiresIn: '1d' });
+  return jwt.sign({ id: userId }, jwtSecret(), { expiresIn: process.env.JWT_EXPIRES_IN || '1d' });
 };

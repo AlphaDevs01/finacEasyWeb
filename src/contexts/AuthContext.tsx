@@ -13,7 +13,7 @@ interface AuthContextData {
   loading: boolean;
   login: (email: string, senha: string) => Promise<void>;
   register: (nome: string, email: string, senha: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => Promise<void>;
 }
 
@@ -24,54 +24,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('@FinanceApp:token');
-    
-    if (token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
-      // Buscar informações do usuário
-      api.get('/configuracoes')
-        .then(response => {
-          setUser(response.data);
-        })
-        .catch(() => {
-          localStorage.removeItem('@FinanceApp:token');
-          api.defaults.headers.common['Authorization'] = '';
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+    api.get('/auth/me')
+      .then(response => {
+        setUser(response.data.user);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const login = async (email: string, senha: string): Promise<void> => {
     const response = await api.post('/auth/login', { email, senha });
-    
-    const { token, user } = response.data;
-    
-    localStorage.setItem('@FinanceApp:token', token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    
-    setUser(user);
+    setUser(response.data.user);
   };
 
   const register = async (nome: string, email: string, senha: string): Promise<void> => {
     const response = await api.post('/auth/register', { nome, email, senha });
-    
-    const { token, user } = response.data;
-    
-    localStorage.setItem('@FinanceApp:token', token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    
-    setUser(user);
+    setUser(response.data.user);
   };
 
-  const logout = (): void => {
-    localStorage.removeItem('@FinanceApp:token');
-    api.defaults.headers.common['Authorization'] = '';
-    setUser(null);
+  const logout = async (): Promise<void> => {
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      setUser(null);
+    }
   };
 
   const updateUser = async (data: Partial<User>): Promise<void> => {
@@ -84,9 +64,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ 
-        isAuthenticated: !!user, 
-        user, 
+      value={{
+        isAuthenticated: !!user,
+        user,
         loading,
         login,
         register,
@@ -101,10 +81,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export function useAuth(): AuthContextData {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
+
   return context;
 }

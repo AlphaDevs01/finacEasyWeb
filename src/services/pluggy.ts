@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { api } from './api';
 
 export interface PluggyAccount {
   id: string;
@@ -65,181 +65,66 @@ export interface PluggyConnector {
 }
 
 class PluggyService {
-  private baseURL = 'https://api.pluggy.ai';
-  private clientId: string;
-  private clientSecret: string;
-  private accessToken: string | null = null;
+  // Este service NÃO chama https://api.pluggy.ai diretamente.
+  // Toda autenticação sensível fica no backend em server/services/pluggyService.js.
 
-  constructor() {
-    this.clientId = import.meta.env.VITE_PLUGGY_CLIENT_ID || '';
-    this.clientSecret = import.meta.env.VITE_PLUGGY_CLIENT_SECRET || '';
-  }
-
-  // Autenticação
-  async authenticate(): Promise<string> {
-    try {
-      const response = await axios.post(`${this.baseURL}/auth`, {
-        clientId: this.clientId,
-        clientSecret: this.clientSecret
-      });
-
-      this.accessToken = response.data.apiKey;
-      return this.accessToken;
-    } catch (error) {
-      console.error('Erro na autenticação Pluggy:', error);
-      throw new Error('Falha na autenticação com Pluggy');
-    }
-  }
-
-  // Headers para requisições autenticadas
-  private async getHeaders() {
-    if (!this.accessToken) {
-      await this.authenticate();
-    }
-
-    return {
-      'X-API-KEY': this.accessToken,
-      'Content-Type': 'application/json'
-    };
-  }
-
-  // Obter conectores disponíveis (bancos)
   async getConnectors(): Promise<PluggyConnector[]> {
-    try {
-      const headers = await this.getHeaders();
-      const response = await axios.get(`${this.baseURL}/connectors`, { headers });
-      
-      // Filtrar apenas bancos brasileiros
-      return response.data.results.filter((connector: PluggyConnector) => 
-        connector.country === 'BR' && 
-        (connector.products.includes('ACCOUNTS') || connector.products.includes('CREDIT_CARDS'))
-      );
-    } catch (error) {
-      console.error('Erro ao buscar conectores:', error);
-      throw new Error('Erro ao buscar bancos disponíveis');
-    }
+    const response = await api.get('/openfinance/connectors');
+    return response.data;
   }
 
-  // Criar item de conexão (conectar com banco)
-  async createItem(connectorId: number, credentials: Record<string, string>): Promise<string> {
-    try {
-      const headers = await this.getHeaders();
-      const response = await axios.post(`${this.baseURL}/items`, {
-        connectorId,
-        parameters: credentials
-      }, { headers });
-
-      return response.data.id;
-    } catch (error) {
-      console.error('Erro ao criar item:', error);
-      throw new Error('Erro ao conectar com o banco');
-    }
+  async createConnectToken(itemId?: string): Promise<any> {
+    const response = await api.post('/openfinance/connect-token', itemId ? { itemId } : {});
+    return response.data;
   }
 
-  // Obter status do item
+  async createItem(connectorId: number, credentials: Record<string, string>, bankName?: string): Promise<string> {
+    const response = await api.post('/openfinance/items', {
+      connectorId,
+      credentials,
+      bankName
+    });
+    return response.data.id;
+  }
+
   async getItemStatus(itemId: string): Promise<any> {
-    try {
-      const headers = await this.getHeaders();
-      const response = await axios.get(`${this.baseURL}/items/${itemId}`, { headers });
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao obter status do item:', error);
-      throw error;
-    }
+    const response = await api.get(`/openfinance/items/${encodeURIComponent(itemId)}`);
+    return response.data;
   }
 
-  // Obter contas de um item
   async getAccounts(itemId: string): Promise<PluggyAccount[]> {
-    try {
-      const headers = await this.getHeaders();
-      const response = await axios.get(`${this.baseURL}/accounts`, {
-        headers,
-        params: { itemId }
-      });
-
-      return response.data.results;
-    } catch (error) {
-      console.error('Erro ao buscar contas:', error);
-      throw new Error('Erro ao buscar contas bancárias');
-    }
+    const response = await api.get('/openfinance/accounts', { params: { itemId } });
+    return response.data;
   }
 
-  // Obter transações de uma conta
-  async getTransactions(accountId: string, from?: string, to?: string): Promise<PluggyTransaction[]> {
-    try {
-      const headers = await this.getHeaders();
-      const params: any = { accountId };
-      
-      if (from) params.from = from;
-      if (to) params.to = to;
-
-      const response = await axios.get(`${this.baseURL}/transactions`, {
-        headers,
-        params
-      });
-
-      return response.data.results;
-    } catch (error) {
-      console.error('Erro ao buscar transações:', error);
-      throw new Error('Erro ao buscar transações');
-    }
+  async getTransactions(itemId: string, accountId: string, from?: string, to?: string): Promise<PluggyTransaction[]> {
+    const response = await api.get('/openfinance/transactions', {
+      params: { itemId, accountId, from, to }
+    });
+    return response.data;
   }
 
-  // Obter cartões de crédito
   async getCreditCards(itemId: string): Promise<PluggyCreditCard[]> {
-    try {
-      const headers = await this.getHeaders();
-      const response = await axios.get(`${this.baseURL}/accounts`, {
-        headers,
-        params: { 
-          itemId,
-          type: 'CREDIT'
-        }
-      });
-
-      return response.data.results;
-    } catch (error) {
-      console.error('Erro ao buscar cartões:', error);
-      throw new Error('Erro ao buscar cartões de crédito');
-    }
+    const response = await api.get('/openfinance/cards', { params: { itemId } });
+    return response.data;
   }
 
-  // Obter investimentos
   async getInvestments(itemId: string): Promise<PluggyInvestment[]> {
-    try {
-      const headers = await this.getHeaders();
-      const response = await axios.get(`${this.baseURL}/investments`, {
-        headers,
-        params: { itemId }
-      });
-
-      return response.data.results;
-    } catch (error) {
-      console.error('Erro ao buscar investimentos:', error);
-      throw new Error('Erro ao buscar investimentos');
-    }
+    const response = await api.get('/openfinance/investments', { params: { itemId } });
+    return response.data;
   }
 
-  // Deletar item (desconectar banco)
   async deleteItem(itemId: string): Promise<void> {
-    try {
-      const headers = await this.getHeaders();
-      await axios.delete(`${this.baseURL}/items/${itemId}`, { headers });
-    } catch (error) {
-      console.error('Erro ao deletar item:', error);
-      throw new Error('Erro ao desconectar banco');
-    }
+    await api.delete(`/openfinance/items/${encodeURIComponent(itemId)}`);
   }
 
-  // Categorizar transação automaticamente
   categorizeTransaction(description: string): string {
     const desc = description.toLowerCase();
-    
     const categories = [
       { keywords: ['supermercado', 'mercado', 'extra', 'carrefour', 'pao', 'acucar'], category: 'Alimentação' },
       { keywords: ['posto', 'shell', 'petrobras', 'ipiranga', 'combustivel', 'gasolina'], category: 'Transporte' },
       { keywords: ['uber', 'taxi', '99', 'metro', 'onibus'], category: 'Transporte' },
-      { keywords: ['farmacia', 'drogaria', 'droga', 'hospital', 'medico', 'clinica'], category: 'Saúde' },
+      { keywords: ['farmacia', 'drogaria', 'hospital', 'medico', 'clinica'], category: 'Saúde' },
       { keywords: ['cinema', 'restaurante', 'bar', 'lanchonete', 'pizza'], category: 'Lazer' },
       { keywords: ['escola', 'faculdade', 'curso', 'livro', 'educacao'], category: 'Educação' },
       { keywords: ['aluguel', 'condominio', 'energia', 'agua', 'gas', 'internet'], category: 'Moradia' },
@@ -249,188 +134,116 @@ class PluggyService {
     ];
 
     for (const cat of categories) {
-      if (cat.keywords.some(keyword => desc.includes(keyword))) {
-        return cat.category;
-      }
+      if (cat.keywords.some(keyword => desc.includes(keyword))) return cat.category;
     }
-
     return 'Outros';
   }
 
-  // Sincronizar dados com sistema local
-  async syncWithLocalSystem(itemId: string, userId: number): Promise<{
+  async syncWithLocalSystem(itemId: string, _userId: number): Promise<{
     accountsSynced: number;
     transactionsSynced: number;
     cardsSynced: number;
     investmentsSynced: number;
   }> {
-    try {
-      const [accounts, creditCards, investments] = await Promise.all([
-        this.getAccounts(itemId),
-        this.getCreditCards(itemId).catch(() => []),
-        this.getInvestments(itemId).catch(() => [])
-      ]);
+    const [accounts, creditCards, investments] = await Promise.all([
+      this.getAccounts(itemId),
+      this.getCreditCards(itemId).catch(() => []),
+      this.getInvestments(itemId).catch(() => [])
+    ]);
 
-      let transactionsSynced = 0;
-      let accountsSynced = 0;
-      let cardsSynced = 0;
-      let investmentsSynced = 0;
+    let transactionsSynced = 0;
+    let accountsSynced = 0;
+    let cardsSynced = 0;
+    let investmentsSynced = 0;
 
-      // Data range - últimos 90 dias
-      const toDate = new Date();
-      const fromDate = new Date();
-      fromDate.setDate(fromDate.getDate() - 90);
+    const toDate = new Date();
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - 90);
+    const from = fromDate.toISOString().split('T')[0];
+    const to = toDate.toISOString().split('T')[0];
 
-      // Sincronizar contas bancárias e transações
-      for (const account of accounts) {
-        try {
-          const transactions = await this.getTransactions(
-            account.id,
-            fromDate.toISOString().split('T')[0],
-            toDate.toISOString().split('T')[0]
-          );
-
-          // Salvar transações como receitas/despesas
-          for (const transaction of transactions) {
-            await this.saveTransactionToLocal(transaction, userId);
-            transactionsSynced++;
-          }
-
-          accountsSynced++;
-        } catch (error) {
-          console.error(`Erro ao sincronizar conta ${account.id}:`, error);
-        }
+    for (const account of accounts) {
+      const transactions = await this.getTransactions(itemId, account.id, from, to).catch(() => []);
+      for (const transaction of transactions) {
+        await this.saveTransactionToLocal(transaction);
+        transactionsSynced++;
       }
-
-      // Sincronizar cartões de crédito
-      for (const card of creditCards) {
-        try {
-          await this.saveCreditCardToLocal(card, userId);
-          cardsSynced++;
-        } catch (error) {
-          console.error(`Erro ao sincronizar cartão ${card.id}:`, error);
-        }
-      }
-
-      // Sincronizar investimentos
-      for (const investment of investments) {
-        try {
-          await this.saveInvestmentToLocal(investment, userId);
-          investmentsSynced++;
-        } catch (error) {
-          console.error(`Erro ao sincronizar investimento ${investment.id}:`, error);
-        }
-      }
-
-      return {
-        accountsSynced,
-        transactionsSynced,
-        cardsSynced,
-        investmentsSynced
-      };
-    } catch (error) {
-      console.error('Erro na sincronização:', error);
-      throw error;
+      accountsSynced++;
     }
+
+    for (const card of creditCards) {
+      await this.saveCreditCardToLocal(card);
+      cardsSynced++;
+    }
+
+    for (const investment of investments) {
+      await this.saveInvestmentToLocal(investment);
+      investmentsSynced++;
+    }
+
+    return { accountsSynced, transactionsSynced, cardsSynced, investmentsSynced };
   }
 
-  private async saveTransactionToLocal(transaction: PluggyTransaction, userId: number): Promise<void> {
-    try {
-      const token = localStorage.getItem('@FinanceApp:token');
-      const endpoint = transaction.type === 'CREDIT' ? '/receitas' : '/despesas';
-      
-      // Verificar se a transação já existe
-      const existingCheck = await axios.get(`/api${endpoint}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-        params: {
-          descricao: transaction.description,
-          valor: Math.abs(transaction.amount),
-          data: transaction.date
-        }
-      });
-
-      // Se já existe uma transação similar, pular
-      const exists = existingCheck.data.some((t: any) => 
-        t.descricao.toLowerCase().includes(transaction.description.toLowerCase()) &&
-        Math.abs(t.valor - Math.abs(transaction.amount)) < 0.01 &&
-        t.data === transaction.date
-      );
-
-      if (exists) {
-        console.log('Transação já existe, pulando:', transaction.description);
-        return;
-      }
-
-      await axios.post(`/api${endpoint}`, {
+  private async saveTransactionToLocal(transaction: PluggyTransaction): Promise<void> {
+    const endpoint = transaction.type === 'CREDIT' ? '/receitas' : '/despesas';
+    const existingCheck = await api.get(endpoint, {
+      params: {
         descricao: transaction.description,
         valor: Math.abs(transaction.amount),
-        data: transaction.date,
-        categoria: this.categorizeTransaction(transaction.description),
-        tipo: 'conta',
-        status: 'paga',
-        observacoes: `Sincronizado via Pluggy - ID: ${transaction.id}`
-      }, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        data: transaction.date
+      }
+    });
+
+    const exists = existingCheck.data.some((t: any) =>
+      String(t.descricao || '').toLowerCase().includes(transaction.description.toLowerCase()) &&
+      Math.abs(Number(t.valor) - Math.abs(transaction.amount)) < 0.01 &&
+      String(t.data).slice(0, 10) === transaction.date
+    );
+
+    if (exists) return;
+
+    await api.post(endpoint, {
+      descricao: transaction.description,
+      valor: Math.abs(transaction.amount),
+      data: transaction.date,
+      categoria: this.categorizeTransaction(transaction.description),
+      tipo: 'conta',
+      status: 'paga',
+      observacoes: `Sincronizado via Pluggy - ID: ${transaction.id}`
+    });
+  }
+
+  private async saveCreditCardToLocal(card: PluggyCreditCard): Promise<void> {
+    const existingCards = await api.get('/cartoes');
+    const last4 = card.number ? card.number.slice(-4) : '';
+    const cardExists = existingCards.data.some((c: any) =>
+      c.numero === last4 || String(c.nome || '').toLowerCase().includes(card.name.toLowerCase())
+    );
+
+    if (!cardExists) {
+      await api.post('/cartoes', {
+        nome: card.name,
+        numero: last4 || '0000',
+        limite: card.creditLimit || 0,
+        data_fechamento: card.closeDay || 1,
+        data_vencimento: card.dueDay || 1
       });
-    } catch (error) {
-      console.error('Erro ao salvar transação local:', error);
     }
   }
 
-  private async saveCreditCardToLocal(card: PluggyCreditCard, userId: number): Promise<void> {
-    try {
-      const token = localStorage.getItem('@FinanceApp:token');
-      
-      // Verificar se o cartão já existe
-      const existingCards = await axios.get('/api/cartoes', {
-        headers: { 'Authorization': `Bearer ${token}` }
+  private async saveInvestmentToLocal(investment: PluggyInvestment): Promise<void> {
+    const existingInvestments = await api.get('/investimentos');
+    const investmentExists = existingInvestments.data.some((i: any) =>
+      String(i.nome || '').toLowerCase().includes(investment.name.toLowerCase())
+    );
+
+    if (!investmentExists) {
+      await api.post('/investimentos', {
+        tipo: investment.type,
+        nome: investment.name,
+        valor_aplicado: investment.balance || 0,
+        rendimento_mensal: investment.rate || 0
       });
-
-      const cardExists = existingCards.data.some((c: any) => 
-        c.numero === card.number.slice(-4) || c.nome.toLowerCase().includes(card.name.toLowerCase())
-      );
-      
-      if (!cardExists) {
-        await axios.post('/api/cartoes', {
-          nome: card.name,
-          numero: card.number.slice(-4),
-          limite: card.creditLimit,
-          data_fechamento: card.closeDay,
-          data_vencimento: card.dueDay
-        }, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao salvar cartão local:', error);
-    }
-  }
-
-  private async saveInvestmentToLocal(investment: PluggyInvestment, userId: number): Promise<void> {
-    try {
-      const token = localStorage.getItem('@FinanceApp:token');
-      
-      // Verificar se o investimento já existe
-      const existingInvestments = await axios.get('/api/investimentos', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const investmentExists = existingInvestments.data.some((i: any) => 
-        i.nome.toLowerCase().includes(investment.name.toLowerCase())
-      );
-      
-      if (!investmentExists) {
-        await axios.post('/api/investimentos', {
-          tipo: investment.type,
-          nome: investment.name,
-          valor_aplicado: investment.balance,
-          rendimento_mensal: investment.rate || 0
-        }, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao salvar investimento local:', error);
     }
   }
 }

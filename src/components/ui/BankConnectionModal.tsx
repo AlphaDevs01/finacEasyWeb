@@ -102,8 +102,8 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
               <div>
                 <h3 className="font-semibold text-blue-800 mb-1">Segurança Garantida</h3>
                 <p className="text-sm text-blue-700">
-                  Suas credenciais são enviadas diretamente para o {connector.name} através de conexão criptografada. 
-                  Não armazenamos suas senhas.
+                  Suas credenciais são enviadas ao backend seguro da aplicação e repassadas à Pluggy por conexão criptografada. 
+                  Não armazenamos suas senhas nem expomos chaves Pluggy no navegador.
                 </p>
               </div>
             </div>
@@ -178,7 +178,7 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
           <div className="mt-6 bg-neutral-50 rounded-xl p-4">
             <h4 className="font-semibold text-neutral-800 mb-2">Como funciona:</h4>
             <ol className="text-sm text-neutral-600 space-y-1">
-              <li>1. Suas credenciais são enviadas diretamente para o {connector.name}</li>
+              <li>1. Suas credenciais são enviadas ao backend seguro da aplicação</li>
               <li>2. O banco valida suas informações de forma segura</li>
               <li>3. Recebemos autorização para acessar seus dados (somente leitura)</li>
               <li>4. Suas transações são importadas automaticamente</li>

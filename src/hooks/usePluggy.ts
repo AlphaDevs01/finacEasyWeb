@@ -71,13 +71,6 @@ export const usePluggy = (): UsePluggyReturn => {
       // Criar item no Pluggy
       const itemId = await pluggyService.createItem(connectorId, credentials);
       
-      // Salvar conexão no banco local
-      await api.post('/openfinance/connections', {
-        itemId,
-        connectorId,
-        status: 'CREATED'
-      });
-      
       // Aguardar alguns segundos para o banco processar
       await new Promise(resolve => setTimeout(resolve, 3000));
       
@@ -113,11 +106,7 @@ export const usePluggy = (): UsePluggyReturn => {
 
   const disconnectBank = async (itemId: string): Promise<void> => {
     try {
-      // Deletar item no Pluggy
       await pluggyService.deleteItem(itemId);
-      
-      // Remover conexão do banco local
-      await api.delete(`/openfinance/connections/${itemId}`);
       
       await loadConnections();
       

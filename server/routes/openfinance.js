@@ -1,7 +1,197 @@
 import express from 'express';
 import db from '../db/index.js';
+import * as pluggyService from '../services/pluggyService.js';
 
 const router = express.Router();
+
+const safeError = (res, error, fallback = 'Erro na operação Open Finance') => {
+  const status = Number(error?.status || 500);
+  return res.status(status >= 400 && status < 600 ? status : 500).json({ error: error?.message || fallback });
+};
+
+
+const mapConnection = (row) => ({
+  id: String(row.id),
+  userId: row.userid ?? row.userId,
+  itemId: row.itemid || row.connection_token,
+  connectorId: Number(row.connectorid || row.bank_id || 0),
+  bankName: row.bankname || row.bank_id || 'Banco',
+  status: row.status,
+  lastSync: row.connected_at,
+  createdAt: row.created_at
+});
+
+const assertOwnedConnection = async (userId, itemId) => {
+  const result = await db.query(
+    'SELECT * FROM openfinance_connections WHERE connection_token = $1 AND userId = $2 AND disconnected_at IS NULL',
+    [itemId, userId]
+  );
+  return result.rows[0] || null;
+};
+
+
+
+// Conectores disponíveis via backend. O frontend não deve chamar api.pluggy.ai diretamente.
+router.get('/connectors', async (_req, res) => {
+  try {
+    const connectors = await pluggyService.getConnectors();
+    res.json(connectors);
+  } catch (error) {
+    safeError(res, error, 'Erro ao buscar bancos disponíveis');
+  }
+});
+
+// Connect token para fluxos Pluggy Connect, quando usado pelo frontend.
+router.post('/connect-token', async (req, res) => {
+  try {
+    const token = await pluggyService.createConnectToken(req.body?.itemId);
+    res.json(token);
+  } catch (error) {
+    safeError(res, error, 'Erro ao criar connect token');
+  }
+});
+
+// Compatibilidade com a tela atual, que ainda coleta credenciais em modal.
+// As credenciais vão para o backend e nunca expõem PLUGGY_CLIENT_SECRET no bundle.
+router.post('/items', async (req, res) => {
+  const userId = req.user.id;
+  const { connectorId, credentials = {}, bankName } = req.body || {};
+
+  if (!Number.isInteger(Number(connectorId)) || typeof credentials !== 'object' || Array.isArray(credentials)) {
+    return res.status(400).json({ error: 'Payload inválido para conexão Open Finance' });
+  }
+
+  try {
+    const item = await pluggyService.createItem({ connectorId: Number(connectorId), credentials });
+
+    await db.query(
+      `INSERT INTO openfinance_connections (userId, bank_id, connection_token, connectorId, itemId, bankName, status, connected_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
+       ON CONFLICT DO NOTHING`,
+      [userId, String(connectorId), item.id, Number(connectorId), item.id, bankName || null, item.status || 'CREATED']
+    );
+
+    res.status(201).json(item);
+  } catch (error) {
+    safeError(res, error, 'Erro ao conectar com o banco');
+  }
+});
+
+router.get('/items/:itemId', async (req, res) => {
+  const connection = await assertOwnedConnection(req.user.id, req.params.itemId);
+  if (!connection) return res.status(404).json({ error: 'Item não encontrado' });
+
+  try {
+    const item = await pluggyService.getItemStatus(req.params.itemId);
+    await db.query(
+      'UPDATE openfinance_connections SET status = $1 WHERE connection_token = $2 AND userId = $3',
+      [item.status || connection.status, req.params.itemId, req.user.id]
+    );
+    res.json(item);
+  } catch (error) {
+    safeError(res, error, 'Erro ao obter status do item');
+  }
+});
+
+router.delete('/items/:itemId', async (req, res) => {
+  const connection = await assertOwnedConnection(req.user.id, req.params.itemId);
+  if (!connection) return res.status(404).json({ error: 'Item não encontrado' });
+
+  try {
+    await pluggyService.deleteItem(req.params.itemId);
+    await db.query(
+      'UPDATE openfinance_connections SET disconnected_at = CURRENT_TIMESTAMP, status = $1 WHERE connection_token = $2 AND userId = $3',
+      ['DISCONNECTED', req.params.itemId, req.user.id]
+    );
+    res.json({ message: 'Conexão removida com sucesso' });
+  } catch (error) {
+    safeError(res, error, 'Erro ao desconectar banco');
+  }
+});
+
+router.get('/accounts', async (req, res) => {
+  const { itemId } = req.query;
+  if (!itemId) return res.status(400).json({ error: 'itemId é obrigatório' });
+  const connection = await assertOwnedConnection(req.user.id, String(itemId));
+  if (!connection) return res.status(404).json({ error: 'Conexão não encontrada' });
+
+  try {
+    res.json(await pluggyService.getAccounts(String(itemId)));
+  } catch (error) {
+    safeError(res, error, 'Erro ao buscar contas');
+  }
+});
+
+router.get('/transactions', async (req, res) => {
+  const { itemId, accountId, from, to } = req.query;
+  if (!itemId || !accountId) return res.status(400).json({ error: 'itemId e accountId são obrigatórios' });
+  const connection = await assertOwnedConnection(req.user.id, String(itemId));
+  if (!connection) return res.status(404).json({ error: 'Conexão não encontrada' });
+
+  try {
+    res.json(await pluggyService.getTransactions({ accountId: String(accountId), from, to }));
+  } catch (error) {
+    safeError(res, error, 'Erro ao buscar transações');
+  }
+});
+
+router.get('/cards', async (req, res) => {
+  const { itemId } = req.query;
+  if (!itemId) return res.status(400).json({ error: 'itemId é obrigatório' });
+  const connection = await assertOwnedConnection(req.user.id, String(itemId));
+  if (!connection) return res.status(404).json({ error: 'Conexão não encontrada' });
+
+  try {
+    res.json(await pluggyService.getCards(String(itemId)));
+  } catch (error) {
+    safeError(res, error, 'Erro ao buscar cartões');
+  }
+});
+
+router.get('/investments', async (req, res) => {
+  const { itemId } = req.query;
+  if (!itemId) return res.status(400).json({ error: 'itemId é obrigatório' });
+  const connection = await assertOwnedConnection(req.user.id, String(itemId));
+  if (!connection) return res.status(404).json({ error: 'Conexão não encontrada' });
+
+  try {
+    res.json(await pluggyService.getInvestments(String(itemId)));
+  } catch (error) {
+    safeError(res, error, 'Erro ao buscar investimentos');
+  }
+});
+
+router.post('/disconnect', async (req, res) => {
+  const { itemId } = req.body || {};
+  if (!itemId) return res.status(400).json({ error: 'itemId é obrigatório' });
+  req.params.itemId = itemId;
+  const connection = await assertOwnedConnection(req.user.id, String(itemId));
+  if (!connection) return res.status(404).json({ error: 'Conexão não encontrada' });
+
+  try {
+    await pluggyService.deleteItem(String(itemId));
+    await db.query(
+      'UPDATE openfinance_connections SET disconnected_at = CURRENT_TIMESTAMP, status = $1 WHERE connection_token = $2 AND userId = $3',
+      ['DISCONNECTED', String(itemId), req.user.id]
+    );
+    res.json({ message: 'Conexão removida com sucesso' });
+  } catch (error) {
+    safeError(res, error, 'Erro ao desconectar banco');
+  }
+});
+
+// Endpoints mínimos para evitar 404 na interface atual de correspondência.
+router.post('/match/:transactionId/accept', async (req, res) => {
+  const { transactionId } = req.params;
+  if (!transactionId) return res.status(400).json({ error: 'transactionId é obrigatório' });
+  res.json({ message: 'Correspondência aceita', transactionId });
+});
+
+router.post('/match/:transactionId/reject', async (req, res) => {
+  const { transactionId } = req.params;
+  if (!transactionId) return res.status(400).json({ error: 'transactionId é obrigatório' });
+  res.json({ message: 'Correspondência rejeitada', transactionId });
+});
 
 // Obter todas as conexões do usuário
 router.get('/connections', async (req, res) => {
@@ -9,11 +199,11 @@ router.get('/connections', async (req, res) => {
     const userId = req.user.id;
     
     const result = await db.query(
-      'SELECT * FROM openfinance_connections WHERE userId = $1 ORDER BY created_at DESC',
+      'SELECT * FROM openfinance_connections WHERE userId = $1 AND disconnected_at IS NULL ORDER BY created_at DESC',
       [userId]
     );
     
-    res.json(result.rows);
+    res.json(result.rows.map(mapConnection));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao buscar conexões' });
@@ -28,10 +218,10 @@ router.post('/connections', async (req, res) => {
   try {
     const result = await db.query(
       'INSERT INTO openfinance_connections (userId, bank_id, connection_token, status, connected_at) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [userId, connectorId.toString(), itemId, status, new Date()]
+      [userId, connectorId.toString(), itemId, status || 'CREATED', new Date()]
     );
     
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(mapConnection(result.rows[0]));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao criar conexão' });
@@ -54,7 +244,7 @@ router.put('/connections/:itemId', async (req, res) => {
       return res.status(404).json({ error: 'Conexão não encontrada' });
     }
     
-    res.json(result.rows[0]);
+    res.json(mapConnection(result.rows[0]));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao atualizar conexão' });
@@ -68,7 +258,7 @@ router.delete('/connections/:itemId', async (req, res) => {
   
   try {
     await db.query(
-      'DELETE FROM openfinance_connections WHERE connection_token = $1 AND userId = $2',
+      "UPDATE openfinance_connections SET disconnected_at = CURRENT_TIMESTAMP, status = 'DISCONNECTED' WHERE connection_token = $1 AND userId = $2",
       [itemId, userId]
     );
     
@@ -145,7 +335,7 @@ router.post('/sync', async (req, res) => {
     
     // Verificar se a conexão pertence ao usuário
     const connectionCheck = await db.query(
-      'SELECT * FROM openfinance_connections WHERE connection_token = $1 AND userId = $2',
+      'SELECT * FROM openfinance_connections WHERE connection_token = $1 AND userId = $2 AND disconnected_at IS NULL',
       [itemId, userId]
     );
     
@@ -176,32 +366,41 @@ router.post('/sync', async (req, res) => {
     
     res.json(mockResults);
   } catch (error) {
-    console.error(error);
-    
-    // Registrar erro de sincronização
-    await db.query(
-      'INSERT INTO openfinance_sync_history (userId, contas_sincronizadas, transacoes_sincronizadas, cartoes_sincronizados, status, error_message) VALUES ($1, $2, $3, $4, $5, $6)',
-      [userId, 0, 0, 0, 'erro', error.message]
-    );
-    
+    console.error('Erro ao sincronizar Open Finance:', error);
+
+    try {
+      await db.query(
+        'INSERT INTO openfinance_sync_history (userId, contas_sincronizadas, transacoes_sincronizadas, cartoes_sincronizados, status, error_message) VALUES ($1, $2, $3, $4, $5, $6)',
+        [userId, 0, 0, 0, 'erro', String(error?.message || 'erro interno').slice(0, 500)]
+      );
+    } catch (historyError) {
+      console.error('Erro ao registrar histórico Open Finance:', historyError);
+    }
+
     res.status(500).json({ error: 'Erro na sincronização' });
   }
 });
 
 // Histórico de sincronização
 router.get('/sync-history', async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Acesso negado' });
+
   try {
-    const userId = req.user.id;
-    
     const result = await db.query(
-      'SELECT * FROM openfinance_sync_history WHERE userId = $1 ORDER BY created_at DESC LIMIT 20',
+      `SELECT id, userid AS "userId", contas_sincronizadas, transacoes_sincronizadas,
+              cartoes_sincronizados, status, error_message, created_at
+       FROM openfinance_sync_history
+       WHERE userId = $1
+       ORDER BY created_at DESC
+       LIMIT 20`,
       [userId]
     );
-    
-    res.json(result.rows);
+
+    return res.json(result.rows);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao buscar histórico' });
+    console.error('Erro ao buscar histórico Open Finance:', error);
+    return res.status(500).json({ error: 'Erro ao buscar histórico' });
   }
 });
 
@@ -213,7 +412,7 @@ router.get('/items/:itemId/status', async (req, res) => {
   try {
     // Verificar se o item pertence ao usuário
     const connectionCheck = await db.query(
-      'SELECT * FROM openfinance_connections WHERE connection_token = $1 AND userId = $2',
+      'SELECT * FROM openfinance_connections WHERE connection_token = $1 AND userId = $2 AND disconnected_at IS NULL',
       [itemId, userId]
     );
     
@@ -232,38 +431,6 @@ router.get('/items/:itemId/status', async (req, res) => {
   }
 });
 
-// Webhook do Pluggy para atualizações de status
-router.post('/webhook', async (req, res) => {
-  const { itemId, status, event } = req.body;
-  
-  try {
-    // Atualizar status da conexão
-    await db.query(
-      'UPDATE openfinance_connections SET status = $1 WHERE connection_token = $2',
-      [status, itemId]
-    );
-    
-    // Se for uma atualização bem-sucedida, registrar no histórico
-    if (event === 'item/updated' && status === 'UPDATED') {
-      // Buscar userId da conexão
-      const connection = await db.query(
-        'SELECT userId FROM openfinance_connections WHERE connection_token = $1',
-        [itemId]
-      );
-      
-      if (connection.rows.length > 0) {
-        await db.query(
-          'INSERT INTO openfinance_sync_history (userId, contas_sincronizadas, transacoes_sincronizadas, cartoes_sincronizados, status) VALUES ($1, $2, $3, $4, $5)',
-          [connection.rows[0].userId, 0, 0, 0, 'sucesso']
-        );
-      }
-    }
-    
-    res.json({ message: 'Webhook processado com sucesso' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao processar webhook' });
-  }
-});
+// Webhook público fica isolado em /api/webhooks/openfinance e não passa por autenticação por cookie.
 
 export default router;

@@ -2,11 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
-@media screen and (max-width: 1000px) {
-    .custom-flex {
-        flex-direction: column;
-        font-size: 15px;
-    }
+View {
+  width: 500px;
 }
