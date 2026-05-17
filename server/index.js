@@ -32,6 +32,10 @@ const PORT = process.env.PORT || 3000;
 
 const app = express();
 
+// Vercel/Render/NGINX enviam X-Forwarded-For.
+// Necessário para o express-rate-limit não quebrar em produção.
+app.set('trust proxy', 1);
+
 const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim())
@@ -119,7 +123,7 @@ app.get('/api/health', (_req, res) => {
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(join(__dirname, '../dist')));
 
-  app.get('*', (req, res) => {
+  app.get(/.*/, (req, res) => {
     res.sendFile(join(__dirname, '../dist/index.html'));
   });
 }

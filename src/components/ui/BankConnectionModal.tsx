@@ -78,7 +78,8 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
               alt={connector.name}
               className="w-8 h-8 rounded"
               onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = '/bank-fallback.svg';
               }}
             />
             <div>

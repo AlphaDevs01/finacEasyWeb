@@ -111,7 +111,8 @@ const OpenFinanceConnect: React.FC = () => {
                       alt={connector.name}
                       className="w-6 h-6 rounded"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/bank-fallback.svg';
                       }}
                     />
                     <div className="text-2xl">🏦</div>
@@ -153,7 +154,8 @@ const OpenFinanceConnect: React.FC = () => {
                       alt={connector?.name}
                       className="w-8 h-8 rounded"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/bank-fallback.svg';
                       }}
                     />
                     <div>
@@ -233,7 +235,8 @@ const OpenFinanceConnect: React.FC = () => {
                 alt={connector.name}
                 className="w-8 h-8 rounded mx-auto mb-2"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
+                  e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/bank-fallback.svg';
                 }}
               />
               <div className="text-sm font-medium truncate">{connector.name}</div>

@@ -16,7 +16,16 @@ const router = express.Router();
 
 const safeError = (res, error, fallback = 'Erro na operação Open Finance') => {
   const status = Number(error?.status || 500);
-  return res.status(status >= 400 && status < 600 ? status : 500).json({ error: error?.message || fallback });
+  const responseStatus = status >= 400 && status < 600 ? status : 500;
+
+  if (error?.details) {
+    console.error('OpenFinance/Pluggy details:', JSON.stringify(error.details, null, 2));
+  }
+
+  return res.status(responseStatus).json({
+    error: error?.message || fallback,
+    ...(process.env.NODE_ENV !== 'production' && error?.details ? { details: error.details } : {})
+  });
 };
 
 
@@ -69,8 +78,12 @@ router.post('/items', async (req, res) => {
   const parsedConnectorId = Number(connectorId);
   const normalizedCredentials = normalizeCredentials(credentials);
 
-  if (!Number.isInteger(parsedConnectorId) || parsedConnectorId <= 0 || !normalizedCredentials || Object.keys(normalizedCredentials).length === 0) {
-    return res.status(400).json({ error: 'Payload inválido para conexão Open Finance' });
+  if (!Number.isInteger(parsedConnectorId) || parsedConnectorId <= 0) {
+    return res.status(400).json({ error: 'connectorId inválido para conexão Open Finance' });
+  }
+
+  if (!normalizedCredentials || Object.keys(normalizedCredentials).length === 0) {
+    return res.status(400).json({ error: 'Credenciais obrigatórias não foram enviadas para conexão Open Finance' });
   }
 
   try {

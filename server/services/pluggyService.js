@@ -44,17 +44,20 @@ const requestPluggy = async (config) => {
   try {
     return await http.request(config);
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('Pluggy request failed:', {
-        status: error?.response?.status,
-        data: error?.response?.data,
-        url: config?.url
-      });
-    }
+    const pluggyPayload = {
+      status: error?.response?.status,
+      data: error?.response?.data,
+      method: config?.method,
+      url: config?.url
+    };
+
+    // Mantém diagnóstico também em produção/Vercel. Não loga credenciais.
+    console.error('Pluggy request failed:', JSON.stringify(pluggyPayload, null, 2));
 
     const safeMessage = sanitizePluggyError(error);
     const safeError = new Error(safeMessage);
     safeError.status = error?.response?.status || 502;
+    safeError.details = error?.response?.data;
     throw safeError;
   }
 };
