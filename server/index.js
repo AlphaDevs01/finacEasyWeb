@@ -34,7 +34,11 @@ const app = express();
 
 // Vercel/Render/NGINX enviam X-Forwarded-For.
 // Necessário para o express-rate-limit não quebrar em produção.
+
 app.set('trust proxy', 1);
+
+// depois disso:
+app.use(globalLimiter);
 
 const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',')
