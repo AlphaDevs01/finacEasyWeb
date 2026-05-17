@@ -18,6 +18,7 @@ import TransactionMatcher from '../components/ui/TransactionMatcher';
 import { usePluggy } from '../hooks/usePluggy';
 import { useToast } from '../components/ui/Toast';
 import { api } from '../services/api';
+import { OPENFINANCE_ENABLED } from '../config/features';
 
 const OpenFinancePage: React.FC = () => {
   const [syncHistory, setSyncHistory] = useState<any[]>([]);
@@ -95,6 +96,22 @@ const OpenFinancePage: React.FC = () => {
       default: return null;
     }
   };
+
+  if (!OPENFINANCE_ENABLED) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-6 text-yellow-900">
+          <h1 className="text-2xl font-bold mb-2">Open Finance desabilitado</h1>
+          <p>
+            A integração Open Finance/Pluggy está desativada neste ambiente. O sistema financeiro padrão continua funcionando normalmente.
+          </p>
+          <p className="mt-3 text-sm">
+            Para habilitar no futuro, defina VITE_OPENFINANCE_ENABLED=true e OPENFINANCE_ENABLED=true no ambiente de produção.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4 space-y-8">

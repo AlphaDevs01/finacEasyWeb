@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { X, Eye, EyeOff, Shield, AlertCircle } from 'lucide-react';
 import { PluggyConnector } from '../../services/pluggy';
 
@@ -75,13 +75,26 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
     updateCredential(field.name, value);
   };
 
-  const hasCredentialFields = Array.isArray(connector?.credentials) && connector.credentials.length > 0;
+  const credentialFields = useMemo(() => connector?.credentials || [], [connector]);
+  const hasCredentialFields = Array.isArray(credentialFields) && credentialFields.length > 0;
+  const allRequiredFieldsFilled = hasCredentialFields && credentialFields.every((field) => {
+    const value = credentials[field.name];
+    return value !== undefined && value !== null && String(value).trim() !== '';
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setCredentials({});
+    setShowPasswords({});
+    setError('');
+    setAcceptedConsent(false);
+  }, [isOpen, connector?.id]);
 
   if (!isOpen || !connector) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-strong max-w-md w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
+      <div className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl bg-white shadow-strong sm:max-h-[90vh] sm:rounded-2xl">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200">
           <div className="flex items-center gap-3">
             <img 
@@ -106,7 +119,7 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {/* Aviso de Segurança */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
@@ -140,7 +153,7 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
               </div>
             )}
 
-            {connector.credentials.map(field => (
+            {credentialFields.map(field => (
               <div key={field.name}>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
                   {field.label}
@@ -184,12 +197,12 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
               </span>
             </label>
 
-            <div className="pt-4">
+            <div className="sticky bottom-0 -mx-4 bg-white px-4 pb-2 pt-4 sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0">
               <button
                 type="submit"
-                disabled={loading || !acceptedConsent || !hasCredentialFields}
+                disabled={loading || !acceptedConsent || !hasCredentialFields || !allRequiredFieldsFilled || !allRequiredFieldsFilled}
                 className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  loading || !acceptedConsent || !hasCredentialFields
+                  loading || !acceptedConsent || !hasCredentialFields || !allRequiredFieldsFilled
                     ? 'bg-primary-100 text-primary-600 cursor-not-allowed'
                     : 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:from-primary-600 hover:to-secondary-600 transform hover:scale-105 shadow-medium'
                 }`}
@@ -203,6 +216,11 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
                   'Conectar Banco'
                 )}
               </button>
+              {hasCredentialFields && !allRequiredFieldsFilled && (
+                <p className="mt-2 text-center text-xs text-neutral-500">
+                  Preencha todos os campos exigidos pelo banco para habilitar a conexão.
+                </p>
+              )}
             </div>
           </form>
 

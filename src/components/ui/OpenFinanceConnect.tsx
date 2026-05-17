@@ -11,6 +11,7 @@ import {
 import { usePluggy } from '../../hooks/usePluggy';
 import { useToast } from './Toast';
 import BankConnectionModal from './BankConnectionModal';
+import { isOpenFinanceTrialMode } from '../../config/features';
 
 const normalizeText = (value: string) =>
   value
@@ -22,6 +23,11 @@ const normalizeText = (value: string) =>
 const isConnectorOffline = (connector: any) => {
   const status = String(connector?.status || connector?.health?.status || '').toUpperCase();
   return status === 'OFFLINE' || status === 'UNAVAILABLE' || connector?.isOffline === true;
+};
+
+const isSandboxConnector = (connector: any) => {
+  const name = normalizeText(String(connector?.name || ''));
+  return name.includes('pluggy') || name.includes('sandbox') || name.includes('meupluggy');
 };
 
 const connectorMatchesPopularBank = (connectorName: string) => {
@@ -62,6 +68,7 @@ const OpenFinanceConnect: React.FC = () => {
 
     return connectors
       .filter((connector) => {
+        if (isOpenFinanceTrialMode && !isSandboxConnector(connector)) return false;
         if (!query) return true;
 
         const searchable = [
@@ -194,6 +201,12 @@ const OpenFinanceConnect: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {isOpenFinanceTrialMode && (
+        <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-900">
+          <strong>Modo teste Pluggy:</strong> sua conta trial permite criar apenas itens Sandbox/Pluggy Bank. Bancos reais ficam ocultos até habilitar o plano de produção.
+        </div>
+      )}
 
       <div className="mb-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">

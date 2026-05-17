@@ -24,6 +24,7 @@ import {
 import CategoryManager from './ui/CategoryManager';
 import ReminderSystem from './ui/ReminderSystem';
 import PeriodComparison from './ui/PeriodComparison';
+import { OPENFINANCE_ENABLED } from '../config/features';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -69,7 +70,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate('/login');
   };
   
-  const menuItems = [
+  const baseMenuItems = [
     { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/cartoes', label: 'Cartões', icon: <CreditCard size={20} /> },
     { path: '/faturas', label: 'Faturas', icon: <CreditCard size={20} /> },

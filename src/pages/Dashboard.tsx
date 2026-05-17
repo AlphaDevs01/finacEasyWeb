@@ -8,6 +8,7 @@ import {
 import { ArrowUpRight, ArrowDownRight, CreditCard, TrendingUp, DollarSign, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
 import OpenFinanceConnect from '../components/ui/OpenFinanceConnect';
+import { OPENFINANCE_ENABLED } from '../config/features';
 
 const Dashboard: React.FC = () => {
   const { dashboard, loadDashboard, historico, loadHistorico, cartoes, loadCartoes } = useFinance();
@@ -398,9 +399,11 @@ const Dashboard: React.FC = () => {
           {/* Seção inferior - Categorias e Cartões */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Open Finance */}
-            <div className="lg:col-span-3 mb-8">
-              <OpenFinanceConnect />
-            </div>
+            {OPENFINANCE_ENABLED && (
+              <div className="lg:col-span-3 mb-8">
+                <OpenFinanceConnect />
+              </div>
+            )}
             
             {/* Categorias de Despesas */}
             <div className="bg-white dark:bg-neutral-700 p-4 sm:p-6 rounded-2xl shadow-medium border border-neutral-200/50 dark:border-neutral-600/50 lg:col-span-1">

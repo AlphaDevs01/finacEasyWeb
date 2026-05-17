@@ -3,6 +3,8 @@ import db from '../db/index.js';
 import * as pluggyService from '../services/pluggyService.js';
 
 const DEBUG_OPENFINANCE = String(process.env.DEBUG_OPENFINANCE || '').toLowerCase() === 'true';
+const OPENFINANCE_ENABLED = String(process.env.OPENFINANCE_ENABLED || 'false').toLowerCase() === 'true';
+const OPENFINANCE_MODE = String(process.env.OPENFINANCE_MODE || 'disabled').toLowerCase();
 
 
 const normalizeCredentials = (credentials) => {
@@ -16,6 +18,20 @@ const normalizeCredentials = (credentials) => {
 };
 
 const router = express.Router();
+
+const disabledResponse = (req, res) =>
+  res.status(503).json({
+    enabled: false,
+    mode: OPENFINANCE_MODE,
+    error: 'Open Finance está desabilitado neste ambiente.',
+    requestId: req.id
+  });
+
+const requireOpenFinanceEnabled = (req, res, next) => {
+  if (OPENFINANCE_ENABLED) return next();
+  return disabledResponse(req, res);
+};
+
 
 const safeError = (res, error, fallback = 'Erro na operação Open Finance') => {
   const status = Number(error?.status || 500);
@@ -62,6 +78,8 @@ const assertOwnedConnection = async (userId, itemId) => {
 router.get('/debug/environment', async (req, res) => {
   res.json({
     nodeEnv: process.env.NODE_ENV || null,
+    enabled: OPENFINANCE_ENABLED,
+    mode: OPENFINANCE_MODE,
     debugOpenFinance: DEBUG_OPENFINANCE,
     userId: req.user?.id || null,
     pluggy: pluggyService.getPluggyDiagnostics()
@@ -107,6 +125,9 @@ router.get('/debug/last-pluggy-error', async (_req, res) => {
 
 
 
+
+// A partir daqui, a integração real só funciona quando a flag estiver habilitada.
+router.use(requireOpenFinanceEnabled);
 
 // Conectores disponíveis via backend. O frontend não deve chamar api.pluggy.ai diretamente.
 router.get('/connectors', async (_req, res) => {

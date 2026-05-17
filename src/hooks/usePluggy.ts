@@ -3,6 +3,7 @@ import PluggyService, { PluggyConnector } from '../services/pluggy';
 import { api } from '../services/api';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
+import { OPENFINANCE_ENABLED } from '../config/features';
 
 interface PluggyConnection {
   id: string;
@@ -34,6 +35,7 @@ export const usePluggy = (): UsePluggyReturn => {
   const pluggyService = new PluggyService();
 
   useEffect(() => {
+    if (!OPENFINANCE_ENABLED) return;
     loadConnectors();
     loadConnections();
   }, []);
@@ -65,6 +67,10 @@ export const usePluggy = (): UsePluggyReturn => {
   };
 
   const connectBank = async (connectorId: number, credentials: Record<string, string>): Promise<string> => {
+    if (!OPENFINANCE_ENABLED) {
+      throw new Error('Open Finance está desabilitado neste ambiente.');
+    }
+
     try {
       setIsLoading(true);
       
