@@ -30,7 +30,16 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
       setCredentials({});
       setShowPasswords({});
     } catch (error: any) {
-      setError(error.message || 'Erro ao conectar com o banco');
+      const apiData = error?.response?.data;
+      const apiError = apiData?.error;
+      const apiDetails = apiData?.details;
+      const requestId = apiData?.requestId;
+      const detailMessage = apiDetails?.data?.message || apiDetails?.data?.error || apiDetails?.data?.detail;
+      const debugMessage = [apiError || error.message || 'Erro ao conectar com o banco', detailMessage, requestId ? `RequestId: ${requestId}` : null]
+        .filter(Boolean)
+        .join(' | ');
+      setError(debugMessage);
+      console.error('Erro detalhado ao conectar Open Finance:', apiData || error);
     } finally {
       setLoading(false);
     }

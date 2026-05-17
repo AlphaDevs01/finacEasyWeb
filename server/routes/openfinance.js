@@ -2,6 +2,9 @@ import express from 'express';
 import db from '../db/index.js';
 import * as pluggyService from '../services/pluggyService.js';
 
+const DEBUG_OPENFINANCE = String(process.env.DEBUG_OPENFINANCE || '').toLowerCase() === 'true';
+
+
 const normalizeCredentials = (credentials) => {
   if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) return null;
 
@@ -18,13 +21,20 @@ const safeError = (res, error, fallback = 'Erro na operação Open Finance') => 
   const status = Number(error?.status || 500);
   const responseStatus = status >= 400 && status < 600 ? status : 500;
 
-  if (error?.details) {
-    console.error('OpenFinance/Pluggy details:', JSON.stringify(error.details, null, 2));
-  }
+  const requestId = res.req?.id;
+  const details = error?.details;
+
+  console.error(`[${requestId || 'no-request-id'}] OpenFinance error:`, JSON.stringify({
+    message: error?.message,
+    fallback,
+    status: responseStatus,
+    details
+  }, null, 2));
 
   return res.status(responseStatus).json({
     error: error?.message || fallback,
-    ...(process.env.NODE_ENV !== 'production' && error?.details ? { details: error.details } : {})
+    requestId,
+    ...(DEBUG_OPENFINANCE && details ? { details } : {})
   });
 };
 
@@ -47,6 +57,54 @@ const assertOwnedConnection = async (userId, itemId) => {
   );
   return result.rows[0] || null;
 };
+
+// Diagnóstico protegido para produção. Não expõe segredos, apenas flags e último erro Pluggy sanitizado.
+router.get('/debug/environment', async (req, res) => {
+  res.json({
+    nodeEnv: process.env.NODE_ENV || null,
+    debugOpenFinance: DEBUG_OPENFINANCE,
+    userId: req.user?.id || null,
+    pluggy: pluggyService.getPluggyDiagnostics()
+  });
+});
+
+// Diagnóstico dos campos exigidos por um conector específico.
+router.get('/debug/connector/:connectorId', async (req, res) => {
+  const connectorId = Number(req.params.connectorId);
+  if (!Number.isInteger(connectorId) || connectorId <= 0) {
+    return res.status(400).json({ error: 'connectorId inválido' });
+  }
+
+  try {
+    const connector = await pluggyService.getConnectorById(connectorId);
+    if (!connector) return res.status(404).json({ error: 'Conector não encontrado' });
+
+    res.json({
+      id: connector.id,
+      name: connector.name,
+      type: connector.type,
+      country: connector.country,
+      products: connector.products,
+      credentials: (connector.credentials || []).map((field) => ({
+        name: field.name,
+        label: field.label,
+        type: field.type,
+        placeholder: field.placeholder,
+        validation: field.validation,
+        required: field.required ?? true
+      }))
+    });
+  } catch (error) {
+    safeError(res, error, 'Erro ao diagnosticar conector');
+  }
+});
+
+// Último erro Pluggy capturado nesta instância serverless.
+router.get('/debug/last-pluggy-error', async (_req, res) => {
+  res.json(pluggyService.getPluggyDiagnostics());
+});
+
+
 
 
 
@@ -77,16 +135,47 @@ router.post('/items', async (req, res) => {
   const { connectorId, credentials = {}, bankName } = req.body || {};
   const parsedConnectorId = Number(connectorId);
   const normalizedCredentials = normalizeCredentials(credentials);
+  const credentialKeys = normalizedCredentials ? Object.keys(normalizedCredentials) : [];
+
+  console.log(`[${req.id}] OpenFinance create item request`, JSON.stringify({
+    userId,
+    connectorId: parsedConnectorId,
+    bankName: bankName || null,
+    credentialKeys,
+    rawCredentialKeys: credentials && typeof credentials === 'object' ? Object.keys(credentials) : []
+  }, null, 2));
 
   if (!Number.isInteger(parsedConnectorId) || parsedConnectorId <= 0) {
-    return res.status(400).json({ error: 'connectorId inválido para conexão Open Finance' });
+    return res.status(400).json({ error: 'connectorId inválido para conexão Open Finance', requestId: req.id });
   }
 
   if (!normalizedCredentials || Object.keys(normalizedCredentials).length === 0) {
-    return res.status(400).json({ error: 'Credenciais obrigatórias não foram enviadas para conexão Open Finance' });
+    return res.status(400).json({ error: 'Credenciais obrigatórias não foram enviadas para conexão Open Finance', requestId: req.id });
   }
 
   try {
+    const connector = await pluggyService.getConnectorById(parsedConnectorId);
+    const expectedCredentialKeys = (connector?.credentials || []).map((field) => field.name);
+    const missingKeys = expectedCredentialKeys.filter((key) => !credentialKeys.includes(key));
+
+    console.log(`[${req.id}] OpenFinance connector diagnostic`, JSON.stringify({
+      connectorFound: Boolean(connector),
+      connectorName: connector?.name,
+      expectedCredentialKeys,
+      receivedCredentialKeys: credentialKeys,
+      missingKeys
+    }, null, 2));
+
+    if (connector && expectedCredentialKeys.length > 0 && missingKeys.length > 0) {
+      return res.status(400).json({
+        error: 'Credenciais incompletas para este banco',
+        requestId: req.id,
+        expectedCredentialKeys,
+        receivedCredentialKeys: credentialKeys,
+        missingKeys
+      });
+    }
+
     const item = await pluggyService.createItem({
       connectorId: parsedConnectorId,
       credentials: normalizedCredentials,

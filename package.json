@@ -13,7 +13,9 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "debug:openfinance": "node -r dotenv/config scripts/debug-openfinance.mjs",
+    "debug:openfinance:prod": "node scripts/debug-openfinance.mjs"
   },
   "dependencies": {
     "@types/node": "^20.8.2",
