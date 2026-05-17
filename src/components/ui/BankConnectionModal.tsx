@@ -19,16 +19,23 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [acceptedConsent, setAcceptedConsent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!acceptedConsent) {
+      setError('Para conectar um banco, é necessário aceitar o termo de autorização de uso de dados financeiros.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       await onConnect(credentials);
       setCredentials({});
       setShowPasswords({});
+      setAcceptedConsent(false);
     } catch (error: any) {
       const apiData = error?.response?.data;
       const apiError = apiData?.error;
@@ -53,13 +60,6 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
     setShowPasswords(prev => ({ ...prev, [fieldName]: !prev[fieldName] }));
   };
 
-  const getFieldType = (field: any) => {
-    if (field.type === 'password') return 'password';
-    if (field.name.toLowerCase().includes('cpf')) return 'text';
-    if (field.name.toLowerCase().includes('email')) return 'email';
-    return 'text';
-  };
-
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '');
     if (numbers.length <= 11) {
@@ -74,6 +74,8 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
     }
     updateCredential(field.name, value);
   };
+
+  const hasCredentialFields = Array.isArray(connector?.credentials) && connector.credentials.length > 0;
 
   if (!isOpen || !connector) return null;
 
@@ -132,6 +134,12 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {!hasCredentialFields && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-yellow-800">
+                Este conector não retornou campos de credencial. Se ele usar fluxo de consentimento externo, será necessário implementar o Connect Token/Pluggy Connect para esse banco.
+              </div>
+            )}
+
             {connector.credentials.map(field => (
               <div key={field.name}>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -162,12 +170,26 @@ const BankConnectionModal: React.FC<BankConnectionModalProps> = ({
               </div>
             ))}
 
+
+            <label className="flex items-start gap-3 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
+              <input
+                type="checkbox"
+                checked={acceptedConsent}
+                onChange={(event) => setAcceptedConsent(event.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                required
+              />
+              <span>
+                Autorizo o uso dos meus dados financeiros para conexão, sincronização e categorização das informações deste banco, conforme Termos de Uso e Política de Privacidade da aplicação.
+              </span>
+            </label>
+
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !acceptedConsent || !hasCredentialFields}
                 className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  loading
+                  loading || !acceptedConsent || !hasCredentialFields
                     ? 'bg-primary-100 text-primary-600 cursor-not-allowed'
                     : 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:from-primary-600 hover:to-secondary-600 transform hover:scale-105 shadow-medium'
                 }`}
