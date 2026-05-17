@@ -34,11 +34,7 @@ const app = express();
 
 // Vercel/Render/NGINX enviam X-Forwarded-For.
 // Necessário para o express-rate-limit não quebrar em produção.
-
 app.set('trust proxy', 1);
-
-// depois disso:
-app.use(globalLimiter);
 
 const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',')
@@ -65,24 +61,34 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '1mb' }));
-app.use(rateLimit({
+
+// Rate limiters definidos localmente para evitar ReferenceError em produção/Vercel.
+// Importante: app.set('trust proxy', 1) deve vir antes destes middlewares.
+const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: Number(process.env.RATE_LIMIT_MAX || 300),
+  max: Number(process.env.RATE_LIMIT_MAX || 300),
   standardHeaders: true,
   legacyHeaders: false
-}));
-app.use('/api/auth/login', rateLimit({
+});
+
+const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: Number(process.env.LOGIN_RATE_LIMIT_MAX || 5),
+  max: Number(process.env.LOGIN_RATE_LIMIT_MAX || 5),
   standardHeaders: true,
-  legacyHeaders: false
-}));
-app.use('/api/auth/register', rateLimit({
+  legacyHeaders: false,
+  skipSuccessfulRequests: true
+});
+
+const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  limit: Number(process.env.REGISTER_RATE_LIMIT_MAX || 10),
+  max: Number(process.env.REGISTER_RATE_LIMIT_MAX || 10),
   standardHeaders: true,
   legacyHeaders: false
-}));
+});
+
+app.use(globalLimiter);
+app.use('/api/auth/login', loginLimiter);
+app.use('/api/auth/register', registerLimiter);
 
 // Inicializar banco antes das rotas de API.
 const dbReady = db.initDatabase();
