@@ -100,6 +100,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       onClick: () => setShowPeriodComparison(true)
     }
   ];
+
+  const menuItems = OPENFINANCE_ENABLED
+    ? baseMenuItems
+    : baseMenuItems.filter((item) => item.path !== '/openfinance');
   
   const isActive = (path: string) => location.pathname === path;
   
