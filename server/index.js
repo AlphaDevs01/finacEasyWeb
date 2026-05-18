@@ -20,8 +20,6 @@ import metasRoutes from './routes/metas.js';
 import notificacoesRoutes from './routes/notificacoes.js';
 import categoriasRoutes from './routes/categorias.js';
 import lembretesRoutes from './routes/lembretes.js';
-import openfinanceRoutes from './routes/openfinance.js';
-import openfinanceWebhookRoutes from './routes/openfinanceWebhook.js';
 import { authenticateToken } from './middleware/auth.js';
 import { generateRequestId } from './config/security.js';
 
@@ -107,7 +105,6 @@ app.use('/api', async (req, res, next) => {
 
 // Rotas públicas
 app.use('/api/auth', authRoutes);
-app.use('/api/webhooks/openfinance', openfinanceWebhookRoutes);
 
 // Rotas protegidas
 app.use('/api/dashboard', authenticateToken, dashboardRoutes);
@@ -122,7 +119,6 @@ app.use('/api/metas', authenticateToken, metasRoutes);
 app.use('/api/notificacoes', authenticateToken, notificacoesRoutes);
 app.use('/api/categorias', authenticateToken, categoriasRoutes);
 app.use('/api/lembretes', authenticateToken, lembretesRoutes);
-app.use('/api/openfinance', authenticateToken, openfinanceRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

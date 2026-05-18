@@ -97,16 +97,6 @@ export const backupImportLimiter = rateLimit({
 });
 
 // Open Finance sync: limite de sincronizações
-export const openFinanceSyncLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutos
-  max: 2, // 2 sincronizações por usuário a cada 10 minutos
-  message: 'Muitas sincronizações. Aguarde 10 minutos.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.id ? `ofinance-sync-${req.user.id}` : `ofinance-sync-${req.ip}`;
-  }
-});
 
 // Webhook: proteção contra spam
 export const webhookLimiter = rateLimit({

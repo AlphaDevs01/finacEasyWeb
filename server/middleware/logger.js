@@ -139,35 +139,6 @@ export const auditLog = {
   },
   
   // Open Finance
-  openFinanceConnect: (userId, connectorId, status) => {
-    logger.info({
-      msg: 'openfinance_connected',
-      userId,
-      connectorId,
-      status,
-      timestamp: new Date().toISOString()
-    });
-  },
-  
-  openFinanceDisconnect: (userId, connectionId) => {
-    logger.info({
-      msg: 'openfinance_disconnected',
-      userId,
-      connectionId,
-      timestamp: new Date().toISOString()
-    });
-  },
-  
-  openFinanceSync: (userId, connectionId, status, recordsCount = 0) => {
-    logger.info({
-      msg: 'openfinance_synced',
-      userId,
-      connectionId,
-      status,
-      recordsCount,
-      timestamp: new Date().toISOString()
-    });
-  },
   
   // Webhook recebido
   webhookReceived: (source, eventType, correlationId, verified = false) => {

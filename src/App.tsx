@@ -18,8 +18,6 @@ import Configuracoes from './pages/Configuracoes';
 import NotFound from './pages/NotFound';
 import Faturas from './pages/Faturas';
 import Metas from './pages/Metas';
-import OpenFinancePage from './pages/OpenFinancePage';
-import { OPENFINANCE_ENABLED } from './config/features';
 
 function App() {
   return (
@@ -121,17 +119,7 @@ function App() {
                     </PrivateRoute>
                   }
                 />
-                
-                <Route 
-                  path="/openfinance"
-                  element={
-                    <PrivateRoute>
-                      {OPENFINANCE_ENABLED ? <OpenFinancePage /> : <Navigate to="/" replace />}
-                    </PrivateRoute>
-                  }
-                />
-                
-                <Route path="/404" element={<NotFound />} />
+<Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" />} />
               </Routes>
             </Router>

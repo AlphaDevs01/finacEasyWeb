@@ -133,14 +133,6 @@ export const lemoneteSchema = z.object({
   ativo: z.boolean().default(true)
 }).strict();
 
-// Open Finance Schemas
-export const openFinanceConnectSchema = z.object({
-  connectorId: z.number().int().positive()
-}).strict();
-
-export const openFinanceSyncSchema = z.object({
-  connectionId: z.string().min(1)
-}).strict();
 
 // Backup/Restore Schema
 export const backupSchema = z.object({

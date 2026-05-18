@@ -19,12 +19,10 @@ import {
   Bell,
   Tag,
   Calendar,
-  Building2
 } from 'lucide-react';
 import CategoryManager from './ui/CategoryManager';
 import ReminderSystem from './ui/ReminderSystem';
 import PeriodComparison from './ui/PeriodComparison';
-import { OPENFINANCE_ENABLED } from '../config/features';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -70,7 +68,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate('/login');
   };
   
-  const baseMenuItems = [
+  const menuItems = [
     { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/cartoes', label: 'Cartões', icon: <CreditCard size={20} /> },
     { path: '/faturas', label: 'Faturas', icon: <CreditCard size={20} /> },
@@ -79,7 +77,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/metas', label: 'Metas de Gastos', icon: <TrendingUp size={20} /> },
     { path: '/relatorios', label: 'Relatórios', icon: <BarChart4 size={20} /> },
     { path: '/importacao', label: 'Importar CSV', icon: <Upload size={20} /> },
-    { path: '/openfinance', label: 'Open Finance', icon: <Building2 size={20} /> },
     { path: '/configuracoes', label: 'Configurações', icon: <Settings size={20} /> },
     { 
       path: '#categorias', 
@@ -100,10 +97,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       onClick: () => setShowPeriodComparison(true)
     }
   ];
-
-  const menuItems = OPENFINANCE_ENABLED
-    ? baseMenuItems
-    : baseMenuItems.filter((item) => item.path !== '/openfinance');
   
   const isActive = (path: string) => location.pathname === path;
   
